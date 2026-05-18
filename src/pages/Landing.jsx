@@ -1,14 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, Download, Sparkles, Play, Star } from 'lucide-react'
-import { PageWrapper, staggerContainer, fadeUp } from '../animations'
+import { ArrowRight, Download, Sparkles, Star } from 'lucide-react'
+import { PageWrapper } from '../animations'
 import ToolCard from '../components/ToolCard'
 import FeatureCard from '../components/FeatureCard'
-import PricingCard from '../components/PricingCard'
 import FAQAccordion from '../components/FAQAccordion'
 import AnimatedButton from '../components/AnimatedButton'
-import { TOOLS, FEATURES, STATS, PRICING, TESTIMONIALS, FAQS } from '../constants'
+import { TOOLS, FEATURES, STATS, TESTIMONIALS, FAQS } from '../constants'
 
 export default function Landing() {
   const [url, setUrl] = useState('')
@@ -26,7 +25,7 @@ export default function Landing() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-cyan-500/20 text-cyan-400 text-sm font-medium mb-8"
           >
             <Sparkles size={14} />
-            AI-Powered Media Platform — 50+ Tools
+            100% Free YouTube Tools — No Signup Needed
             <ArrowRight size={14} />
           </motion.div>
 
@@ -36,10 +35,10 @@ export default function Landing() {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="text-5xl sm:text-6xl lg:text-7xl font-black text-white leading-tight mb-6"
           >
-            Convert. Create.{' '}
-            <span className="neon-text">Automate.</span>
+            Convert. Download.{' '}
+            <span className="neon-text">Free.</span>
             <br />
-            <span className="text-slate-400 text-4xl sm:text-5xl lg:text-6xl font-bold">All in One Place.</span>
+            <span className="text-slate-400 text-4xl sm:text-5xl lg:text-6xl font-bold">No Limits. No Cost.</span>
           </motion.h1>
 
           <motion.p
@@ -48,7 +47,7 @@ export default function Landing() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-slate-400 text-lg sm:text-xl max-w-2xl mx-auto mb-10"
           >
-            The ultimate toolkit for creators. Convert videos, generate AI scripts, download media, and access 50+ premium tools — free.
+            The ultimate free toolkit for creators. Convert YouTube videos to MP3, download videos in HD, and generate AI scripts — all completely free.
           </motion.p>
 
           {/* URL Input Box */}
@@ -90,7 +89,7 @@ export default function Landing() {
             transition={{ delay: 0.5 }}
             className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-500"
           >
-            {['No signup required', 'Free forever', '1000+ supported sites'].map((t) => (
+            {['No signup required', 'Always free', 'No watermarks'].map((t) => (
               <span key={t} className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
                 {t}
@@ -142,20 +141,20 @@ export default function Landing() {
             className="text-center mb-12"
           >
             <h2 className="text-3xl sm:text-4xl font-black text-white mb-4">
-              Popular <span className="neon-text">Tools</span>
+              Our Free <span className="neon-text">Tools</span>
             </h2>
-            <p className="text-slate-500 max-w-xl mx-auto">Everything you need to create, convert, and automate your media workflow.</p>
+            <p className="text-slate-500 max-w-xl mx-auto">Free tools to convert, download, and create — no account needed.</p>
           </motion.div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {TOOLS.slice(0, 8).map((tool, i) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
+            {TOOLS.slice(0, 3).map((tool, i) => (
               <ToolCard key={tool.id} tool={tool} index={i} />
             ))}
           </div>
-          <div className="text-center mt-8">
+          {/* <div className="text-center mt-8">
             <AnimatedButton variant="secondary" onClick={() => navigate('/tools')}>
               View All 50+ Tools <ArrowRight size={16} />
             </AnimatedButton>
-          </div>
+          </div> */}
         </div>
       </section>
 
@@ -234,7 +233,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing */}
+      {/* Pricing — Coming Soon
       <section className="py-16 px-4">
         <div className="max-w-5xl mx-auto">
           <motion.div
@@ -253,6 +252,7 @@ export default function Landing() {
           </div>
         </div>
       </section>
+      */}
 
       {/* Testimonials */}
       <section className="py-16 px-4">
@@ -327,16 +327,16 @@ export default function Landing() {
           >
             <div className="absolute inset-0 neon-border rounded-3xl" />
             <h2 className="text-3xl sm:text-4xl font-black text-white mb-4 relative z-10">
-              Ready to supercharge your workflow?
+              Start using free tools today
             </h2>
-            <p className="text-slate-400 mb-8 relative z-10">Join 850,000+ creators using NexaTools every day.</p>
+            <p className="text-slate-400 mb-8 relative z-10">Join 850,000+ creators using NexaTools every day — completely free.</p>
             <div className="flex flex-wrap gap-4 justify-center relative z-10">
               <AnimatedButton onClick={() => navigate('/tools')}>
                 Start for Free <ArrowRight size={16} />
               </AnimatedButton>
-              <AnimatedButton variant="secondary" onClick={() => navigate('/pricing')}>
+              {/* <AnimatedButton variant="secondary" onClick={() => navigate('/pricing')}>
                 View Pricing
-              </AnimatedButton>
+              </AnimatedButton> */}
             </div>
           </motion.div>
         </div>

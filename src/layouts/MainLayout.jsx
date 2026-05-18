@@ -1,20 +1,20 @@
-import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import FloatingBlobs from '../components/FloatingBlobs'
 import Toast from '../components/Toast'
 import { useToast } from '../hooks/useToast'
+import { useTheme } from '../context/ThemeContext'
 
 export default function MainLayout() {
-  const [darkMode, setDarkMode] = useState(true)
   const { toasts, removeToast } = useToast()
+  const { theme } = useTheme()
 
   return (
-    <div className={`min-h-screen relative ${darkMode ? 'dark' : ''}`} style={{ background: '#020408' }}>
-      <FloatingBlobs />
+    <div className="min-h-screen relative" style={theme === 'dark' ? { background: '#020408' } : {}}>
+      {theme === 'dark' && <FloatingBlobs />}
       <div className="relative z-10">
-        <Navbar darkMode={darkMode} toggleDark={() => setDarkMode(!darkMode)} />
+        <Navbar />
         <main className="pt-16">
           <Outlet />
         </main>

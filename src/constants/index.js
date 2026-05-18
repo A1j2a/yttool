@@ -1,26 +1,25 @@
 export const NAV_LINKS = [
-  { label: 'Tools', path: '/tools' },
-  { label: 'MP3', path: '/mp3' },
-  { label: 'MP4', path: '/mp4' },
+  { label: 'Video Download', path: '/mp4' },
+  { label: 'Audio Convert', path: '/mp3' },
   { label: 'AI Script', path: '/ai-script' },
-  { label: 'Pricing', path: '/pricing' },
+  { label: 'Tools', path: '/tools' },
   { label: 'About', path: '/about' },
   { label: 'Contact', path: '/contact' },
 ]
 
 export const TOOLS = [
-  { id: 1, name: 'Video to MP3', desc: 'Extract audio from any video URL instantly', icon: 'Music', category: 'Audio', path: '/mp3', trending: true, color: '#00f5ff' },
-  { id: 2, name: 'Video to MP4', desc: 'Download videos in HD quality from any platform', icon: 'Video', category: 'Video', path: '/mp4', trending: true, color: '#bf00ff' },
-  { id: 3, name: 'AI Script Writer', desc: 'Generate professional scripts with AI', icon: 'Sparkles', category: 'AI', path: '/ai-script', trending: true, color: '#ff0080' },
-  { id: 4, name: 'URL Downloader', desc: 'Download media from 1000+ websites', icon: 'Download', category: 'Download', path: '/tools', trending: false, color: '#00ff88' },
-  { id: 5, name: 'Image Compressor', desc: 'Compress images without quality loss', icon: 'Image', category: 'Image', path: '/tools', trending: false, color: '#ff6b35' },
-  { id: 6, name: 'Text to Speech', desc: 'Convert text to natural AI voice', icon: 'Mic', category: 'AI', path: '/tools', trending: true, color: '#00f5ff' },
-  { id: 7, name: 'PDF Converter', desc: 'Convert documents to any format', icon: 'FileText', category: 'Document', path: '/tools', trending: false, color: '#bf00ff' },
-  { id: 8, name: 'QR Generator', desc: 'Create custom QR codes instantly', icon: 'QrCode', category: 'Utility', path: '/tools', trending: false, color: '#ff0080' },
-  { id: 9, name: 'Color Palette', desc: 'Generate stunning color palettes with AI', icon: 'Palette', category: 'Design', path: '/tools', trending: false, color: '#00ff88' },
-  { id: 10, name: 'Code Formatter', desc: 'Format and beautify your code', icon: 'Code', category: 'Dev', path: '/tools', trending: false, color: '#ff6b35' },
-  { id: 11, name: 'Subtitle Generator', desc: 'Auto-generate subtitles from video', icon: 'Captions', category: 'Video', path: '/tools', trending: true, color: '#00f5ff' },
-  { id: 12, name: 'Thumbnail Maker', desc: 'Create viral thumbnails with AI', icon: 'LayoutTemplate', category: 'Design', path: '/tools', trending: false, color: '#bf00ff' },
+  { id: 1, name: 'Video to MP3', desc: 'Extract audio from any YouTube video instantly — free', icon: 'Music', category: 'Audio', path: '/mp3', trending: true, color: '#00f5ff' },
+  { id: 2, name: 'YouTube Video Download', desc: 'Download YouTube videos in HD quality — free', icon: 'Video', category: 'Video', path: '/mp4', trending: true, color: '#bf00ff' },
+  { id: 3, name: 'AI Script Writer', desc: 'Copy YouTube video scripts with AI — free', icon: 'Sparkles', category: 'AI', path: '/ai-script', trending: true, color: '#ff0080' },
+  // { id: 4, name: 'URL Downloader', desc: 'Download media from 1000+ websites', icon: 'Download', category: 'Download', path: '/tools', trending: false, color: '#00ff88' },
+  // { id: 5, name: 'Image Compressor', desc: 'Compress images without quality loss', icon: 'Image', category: 'Image', path: '/tools', trending: false, color: '#ff6b35' },
+  // { id: 6, name: 'Text to Speech', desc: 'Convert text to natural AI voice', icon: 'Mic', category: 'AI', path: '/tools', trending: true, color: '#00f5ff' },
+  // { id: 7, name: 'PDF Converter', desc: 'Convert documents to any format', icon: 'FileText', category: 'Document', path: '/tools', trending: false, color: '#bf00ff' },
+  // { id: 8, name: 'QR Generator', desc: 'Create custom QR codes instantly', icon: 'QrCode', category: 'Utility', path: '/tools', trending: false, color: '#ff0080' },
+  // { id: 9, name: 'Color Palette', desc: 'Generate stunning color palettes with AI', icon: 'Palette', category: 'Design', path: '/tools', trending: false, color: '#00ff88' },
+  // { id: 10, name: 'Code Formatter', desc: 'Format and beautify your code', icon: 'Code', category: 'Dev', path: '/tools', trending: false, color: '#ff6b35' },
+  // { id: 11, name: 'Subtitle Generator', desc: 'Auto-generate subtitles from video', icon: 'Captions', category: 'Video', path: '/tools', trending: true, color: '#00f5ff' },
+  // { id: 12, name: 'Thumbnail Maker', desc: 'Create viral thumbnails with AI', icon: 'LayoutTemplate', category: 'Design', path: '/tools', trending: false, color: '#bf00ff' },
 ]
 
 export const CATEGORIES = ['All', 'Audio', 'Video', 'AI', 'Download', 'Image', 'Document', 'Utility', 'Design', 'Dev']
@@ -37,7 +36,7 @@ export const FEATURES = [
 export const STATS = [
   { value: '12M+', label: 'Files Processed' },
   { value: '850K+', label: 'Active Users' },
-  { value: '50+', label: 'Premium Tools' },
+  { value: '3', label: 'Free Tools' },
   { value: '99.9%', label: 'Uptime' },
 ]
 
@@ -79,7 +78,7 @@ export const TESTIMONIALS = [
 ]
 
 export const FAQS = [
-  { q: 'Is NexaTools really free to use?', a: 'Yes! Our free tier gives you 5 conversions per day and access to basic tools. Upgrade to Pro for unlimited access.' },
+  { q: 'Is NexaTools really free to use?', a: 'Yes! NexaTools is completely free. No signup, no hidden charges — convert and download as much as you want.' },
   { q: 'Which video platforms are supported?', a: 'We support 1000+ platforms including YouTube, Vimeo, TikTok, Instagram, Twitter, Facebook, Dailymotion, and many more.' },
   { q: 'Are my files stored on your servers?', a: 'Never. All processing is done in real-time and files are immediately discarded after conversion. Your privacy is our priority.' },
   { q: 'What quality options are available?', a: 'Free users get up to 720p. Pro users get up to 4K resolution for video and 320kbps for audio.' },

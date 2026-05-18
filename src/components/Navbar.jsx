@@ -3,11 +3,13 @@ import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, Zap, Sun, Moon } from 'lucide-react'
 import { NAV_LINKS } from '../constants'
+import { useTheme } from '../context/ThemeContext'
 
-export default function Navbar({ darkMode, toggleDark }) {
+export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const location = useLocation()
+  const { theme, toggle } = useTheme()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
@@ -56,18 +58,20 @@ export default function Navbar({ darkMode, toggleDark }) {
 
             {/* Right Actions */}
             <div className="flex items-center gap-3">
+              {/* Theme Toggle */}
               <button
-                onClick={toggleDark}
+                onClick={toggle}
                 className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all"
+                title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               >
-                {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
               </button>
               <Link
-                to="/pricing"
+                to="/"
                 className="hidden md:flex items-center gap-2 px-4 py-2 rounded-lg gradient-bg text-white text-sm font-semibold hover:opacity-90 transition-all hover:scale-105"
               >
                 <Zap size={14} />
-                Get Pro
+                Free Tools
               </Link>
               <button
                 className="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5"
@@ -119,11 +123,11 @@ export default function Navbar({ darkMode, toggleDark }) {
                   </Link>
                 ))}
                 <Link
-                  to="/pricing"
+                  to="/"
                   className="mt-4 flex items-center justify-center gap-2 px-4 py-3 rounded-lg gradient-bg text-white text-sm font-semibold"
                 >
                   <Zap size={14} />
-                  Get Pro
+                  Free Tools
                 </Link>
               </div>
             </motion.div>

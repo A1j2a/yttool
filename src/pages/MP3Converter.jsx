@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Music, Download, CheckCircle, Link as LinkIcon, Play, Pause, Volume2, RotateCcw } from 'lucide-react'
 import { PageWrapper } from '../animations'
@@ -7,9 +7,10 @@ import GlassCard from '../components/GlassCard'
 import { AUDIO_QUALITIES } from '../constants'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
+import { extractVideoId } from '../utils/urlValidator'
 
 // ─── Audio Player ─────────────────────────────────────────────────────────────
-function AudioPlayer({ src }) {
+function AudioPlayer({ blobUrl }) {
   const audioRef = useRef(null)
   const [playing, setPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -17,26 +18,34 @@ function AudioPlayer({ src }) {
   const [volume, setVolume] = useState(1)
 
   useEffect(() => {
+    setPlaying(false)
+    setCurrentTime(0)
+    setDuration(0)
+  }, [blobUrl])
+
+  useEffect(() => {
     const audio = audioRef.current
-    if (!audio) return
+    if (!audio || !blobUrl) return
+    const onMeta = () => { if (isFinite(audio.duration)) setDuration(audio.duration) }
     const onTime = () => setCurrentTime(audio.currentTime)
-    const onMeta = () => setDuration(audio.duration)
     const onEnd  = () => setPlaying(false)
-    audio.addEventListener('timeupdate', onTime)
     audio.addEventListener('loadedmetadata', onMeta)
+    audio.addEventListener('durationchange', onMeta)
+    audio.addEventListener('timeupdate', onTime)
     audio.addEventListener('ended', onEnd)
     return () => {
-      audio.removeEventListener('timeupdate', onTime)
       audio.removeEventListener('loadedmetadata', onMeta)
+      audio.removeEventListener('durationchange', onMeta)
+      audio.removeEventListener('timeupdate', onTime)
       audio.removeEventListener('ended', onEnd)
     }
-  }, [src])
+  }, [blobUrl])
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     const a = audioRef.current
     if (!a) return
     if (playing) { a.pause(); setPlaying(false) }
-    else { a.play(); setPlaying(true) }
+    else { await a.play(); setPlaying(true) }
   }
 
   const seek = (e) => {
@@ -53,7 +62,7 @@ function AudioPlayer({ src }) {
   }
 
   const fmt = (s) => {
-    if (!s || isNaN(s)) return '0:00'
+    if (!s || !isFinite(s)) return '0:00'
     return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
   }
 
@@ -61,9 +70,9 @@ function AudioPlayer({ src }) {
 
   return (
     <div className="mt-5 p-4 rounded-xl bg-black/30 border border-cyan-500/20">
-      <audio ref={audioRef} src={src} preload="metadata" crossOrigin="anonymous" />
+      <audio ref={audioRef} src={blobUrl} preload="auto" />
 
-      {/* Animated waveform bars */}
+      {/* Waveform bars */}
       <div className="flex items-end justify-center gap-0.5 h-8 mb-4">
         {Array.from({ length: 40 }).map((_, i) => (
           <motion.div
@@ -116,31 +125,20 @@ function AudioPlayer({ src }) {
   )
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-const LOADER_START = 'https://loader.to/ajax/download.php'
-const LOADER_PROGRESS = 'https://p.savenow.to/api/progress'
-
-function extractVideoId(url) {
-  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/)
-  return m ? m[1] : null
-}
-
-async function startConversion(url) {
-  const params = new URLSearchParams({ start: 1, end: 1, format: 'mp3', url })
-  const res = await fetch(`${LOADER_START}?${params}`)
+// ─── API calls (via local proxy to avoid CORS) ───────────────────────────────
+async function startConversion(videoUrl) {
+  const res = await fetch(`/api/convert?url=${encodeURIComponent(videoUrl)}`)
   if (!res.ok) throw new Error('Failed to start conversion')
   const data = await res.json()
   if (!data.success || !data.id) throw new Error('Invalid response from converter')
   return { id: data.id, title: data.title || 'Audio Track', thumb: data.info?.image || null }
 }
 
-async function pollProgress(id, onProgress) {
+async function pollProgress(id) {
   for (let i = 0; i < 60; i++) {
     await new Promise((r) => setTimeout(r, 2000))
-    const res = await fetch(`${LOADER_PROGRESS}?id=${id}`)
+    const res  = await fetch(`/api/progress?id=${id}`)
     const data = await res.json()
-    const pct = Math.min(Math.round((data.progress / 1000) * 100), 99)
-    onProgress(pct)
     if (data.success === 1 && data.download_url) return data.download_url
   }
   throw new Error('Conversion timed out')
@@ -150,38 +148,53 @@ async function pollProgress(id, onProgress) {
 export default function MP3Converter() {
   const [url, setUrl] = useState('')
   const [quality, setQuality] = useState('192 kbps')
-  const [status, setStatus] = useState('idle')   // idle | loading | done | error
-  const [progress, setProgress] = useState(0)
-  const [result, setResult] = useState(null)      // { title, thumb, downloadUrl }
+  const [status, setStatus] = useState('idle')   // idle | loading | fetching | done | error
+  const [result, setResult] = useState(null)      // { blobUrl, downloadUrl, title, thumb, filename }
   const { toasts, addToast, removeToast } = useToast()
+  const blobRef = useRef(null)
 
-  const handleConvert = async () => {
-    if (!url.trim()) { addToast('Please enter a valid URL', 'error'); return }
+  // revoke blob URL on unmount to free memory
+  useEffect(() => () => { if (blobRef.current) URL.revokeObjectURL(blobRef.current) }, [])
+
+  const isYouTubeUrl = (u) => /^https?:\/\/(www\.)?(youtube\.com\/watch|youtu\.be\/)/.test(u)
+
+  const handleConvert = useCallback(async () => {
+    const trimmed = url.trim()
+    if (!trimmed) { addToast('Please enter a video URL', 'error'); return }
+    if (!isYouTubeUrl(trimmed)) { addToast('Please enter a valid YouTube URL', 'error'); return }
+
+    // revoke previous blob
+    if (blobRef.current) { URL.revokeObjectURL(blobRef.current); blobRef.current = null }
+
     setStatus('loading')
-    setProgress(5)
     setResult(null)
 
     try {
-      const { id, title, thumb } = await startConversion(url.trim())
-      setProgress(15)
+      const { id, title, thumb } = await startConversion(trimmed)
+      const downloadUrl = await pollProgress(id)
+      const filename = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.mp3`
 
-      const downloadUrl = await pollProgress(id, (pct) => setProgress(15 + pct * 0.84))
+      // fetch via proxy stream endpoint so blob works without CORS
+      setStatus('fetching')
+      const res = await fetch(`/api/stream?url=${encodeURIComponent(downloadUrl)}`)
+      if (!res.ok) throw new Error('Failed to fetch audio')
+      const blob = await res.blob()
+      const blobUrl = URL.createObjectURL(blob)
+      blobRef.current = blobUrl
 
-      setProgress(100)
-      setResult({ title, thumb, downloadUrl })
+      setResult({ blobUrl, downloadUrl, title, thumb, filename })
       setStatus('done')
     } catch (err) {
       setStatus('error')
-      addToast(err.message || 'Conversion failed', 'error')
+      addToast(err.message || 'Conversion failed. Try again.', 'error')
     }
-  }
+  }, [url])
 
   const handleDownload = () => {
-    if (!result?.downloadUrl) return
+    if (!result?.blobUrl) return
     const a = document.createElement('a')
-    a.href = result.downloadUrl
-    a.download = `${result.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.mp3`
-    a.target = '_blank'
+    a.href = result.blobUrl
+    a.download = result.filename || 'audio.mp3'
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -190,8 +203,6 @@ export default function MP3Converter() {
 
   const videoId = extractVideoId(url)
   const thumbUrl = result?.thumb || (videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : null)
-
-  const STEPS = ['Fetching URL', 'Extracting audio', 'Encoding MP3', 'Preparing download']
 
   return (
     <PageWrapper>
@@ -205,12 +216,12 @@ export default function MP3Converter() {
           <h1 className="text-4xl font-black text-white mb-3">
             Video to <span className="neon-text">MP3</span>
           </h1>
-          <p className="text-slate-500">Extract high-quality audio from any video URL instantly.</p>
+          <p className="text-slate-500">Extract high-quality audio from any YouTube video instantly.</p>
         </motion.div>
 
         {/* Input Card */}
         <GlassCard hover={false} className="p-6 mb-6">
-          <label className="block text-slate-400 text-sm font-medium mb-2">Video URL</label>
+          <label className="block text-slate-400 text-sm font-medium mb-2">YouTube URL</label>
           <div className="relative mb-5">
             <LinkIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
             <input
@@ -221,6 +232,17 @@ export default function MP3Converter() {
               className="w-full pl-9 pr-4 py-3 rounded-xl glass border border-white/10 text-white placeholder-slate-600 text-sm bg-transparent"
             />
           </div>
+
+          {/* Thumbnail preview */}
+          {thumbUrl && status === 'idle' && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="mb-5 rounded-xl overflow-hidden"
+            >
+              <img src={thumbUrl} alt="preview" className="w-full h-36 object-cover" />
+            </motion.div>
+          )}
 
           <label className="block text-slate-400 text-sm font-medium mb-3">Audio Quality</label>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
@@ -242,35 +264,23 @@ export default function MP3Converter() {
             ))}
           </div>
 
-          <AnimatedButton onClick={handleConvert} disabled={status === 'loading'} className="w-full">
+          <AnimatedButton onClick={handleConvert} disabled={status === 'loading' || status === 'fetching'} className="w-full">
             <Music size={16} />
-            {status === 'loading' ? 'Converting...' : 'Convert to MP3'}
+            {status === 'loading' ? 'Converting...' : status === 'fetching' ? 'Preparing...' : 'Convert to MP3'}
           </AnimatedButton>
         </GlassCard>
 
-        {/* Progress */}
-        {status === 'loading' && (
+        {/* Loading */}
+        {(status === 'loading' || status === 'fetching') && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-2xl p-6 mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-white text-sm font-medium">Converting audio...</span>
-              <span className="text-cyan-400 text-sm font-bold">{Math.round(progress)}%</span>
-            </div>
-            <div className="h-2 rounded-full bg-white/5 overflow-hidden">
-              <motion.div
-                className="h-full rounded-full gradient-bg"
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.5 }}
-              />
-            </div>
-            <div className="flex flex-wrap gap-3 mt-4">
-              {STEPS.map((step, i) => (
-                <span
-                  key={step}
-                  className={`text-xs transition-colors ${progress > i * 24 ? 'text-cyan-400' : 'text-slate-600'}`}
-                >
-                  {step}
-                </span>
-              ))}
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin flex-shrink-0" />
+              <div>
+                <p className="text-white text-sm font-medium">
+                  {status === 'fetching' ? 'Preparing audio preview...' : 'Converting to MP3...'}
+                </p>
+                <p className="text-slate-500 text-xs mt-0.5">This may take a few seconds</p>
+              </div>
             </div>
           </motion.div>
         )}
@@ -303,7 +313,7 @@ export default function MP3Converter() {
             </div>
 
             {/* Audio Player */}
-            <AudioPlayer src={result.downloadUrl} />
+            <AudioPlayer blobUrl={result.blobUrl} />
 
             {/* Download */}
             <AnimatedButton className="w-full mt-4" onClick={handleDownload}>
@@ -322,7 +332,7 @@ export default function MP3Converter() {
           >
             <p className="text-red-400 font-medium mb-1">Conversion failed</p>
             <p className="text-slate-500 text-sm mb-4">
-              The URL may be unsupported or the service is temporarily unavailable. Try again or use a different URL.
+              The video may be unavailable or restricted. Try a different URL.
             </p>
             <button onClick={() => setStatus('idle')} className="text-cyan-400 text-sm hover:underline">
               Try again

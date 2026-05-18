@@ -6,6 +6,7 @@ import AnimatedButton from '../components/AnimatedButton'
 import GlassCard from '../components/GlassCard'
 import { useToast } from '../hooks/useToast'
 import Toast from '../components/Toast'
+import { isValidVideoUrl, extractVideoId } from '../utils/urlValidator'
 
 // ─── Resolution config ────────────────────────────────────────────────────────
 const RESOLUTIONS = [
@@ -170,13 +171,8 @@ function VideoPlayer({ src, title, thumb }) {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const LOADER_START    = 'https://loader.to/ajax/download.php'
-const LOADER_PROGRESS = 'https://p.savenow.to/api/progress'
-
-function extractVideoId(url) {
-  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/)
-  return m ? m[1] : null
-}
+const LOADER_START    = import.meta.env.VITE_LOADER_START
+const LOADER_PROGRESS = import.meta.env.VITE_LOADER_PROGRESS
 
 async function startConversion(url, format) {
   const params = new URLSearchParams({ start: 1, end: 1, format, url })
@@ -212,7 +208,7 @@ export default function MP4Converter() {
   const { toasts, addToast, removeToast } = useToast()
 
   const handleConvert = async () => {
-    if (!url.trim()) { addToast('Please enter a valid URL', 'error'); return }
+    if (!url.trim() || !isValidVideoUrl(url.trim())) { addToast('Please enter a valid YouTube or supported video URL', 'error'); return }
     setStatus('loading')
     setProgress(5)
     setResult(null)
