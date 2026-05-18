@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowRight, Download, Sparkles, Star } from 'lucide-react'
 import { PageWrapper } from '../animations'
@@ -8,10 +8,17 @@ import FeatureCard from '../components/FeatureCard'
 import FAQAccordion from '../components/FAQAccordion'
 import AnimatedButton from '../components/AnimatedButton'
 import { TOOLS, FEATURES, STATS, TESTIMONIALS, FAQS } from '../constants'
+import { useSEO } from '../hooks/useSEO'
 
 export default function Landing() {
   const [url, setUrl] = useState('')
   const navigate = useNavigate()
+
+  useSEO({
+    title: 'NexaTools — Free YouTube to MP3 & MP4 Converter | AI Script Generator',
+    description: 'Convert YouTube videos to MP3 or MP4 for free. No signup, no watermark. Download HD videos and generate AI scripts instantly.',
+    canonical: 'https://nexatools.io/',
+  })
 
   return (
     <PageWrapper>
@@ -339,6 +346,44 @@ export default function Landing() {
               </AnimatedButton> */}
             </div>
           </motion.div>
+        </div>
+      </section>
+      {/* SEO Content + Internal Links */}
+      <section className="py-16 px-4">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl font-bold text-white mb-6">Free YouTube Downloader & Converter Tools</h2>
+          <p className="text-slate-400 leading-relaxed mb-8">
+            NexaTools is the fastest free online tool to convert YouTube videos to MP3 audio or download them as MP4 video.
+            No software installation, no account required — just paste your URL and go.
+          </p>
+          <div className="grid sm:grid-cols-3 gap-4 mb-10">
+            {[
+              { title: 'YouTube to MP3', desc: 'Extract audio from any YouTube video in seconds. Choose quality up to 320kbps.', link: '/mp3', cta: 'Convert to MP3' },
+              { title: 'YouTube to MP4', desc: 'Download YouTube videos in HD up to 1080p. Works with Shorts too.', link: '/mp4', cta: 'Download MP4' },
+              { title: 'AI Script Generator', desc: 'Generate YouTube scripts, blog posts, and ad copy with AI.', link: '/ai-script', cta: 'Try AI Script' },
+            ].map((item) => (
+              <div key={item.title} className="glass rounded-2xl p-5">
+                <h3 className="text-white font-semibold mb-2">{item.title}</h3>
+                <p className="text-slate-400 text-sm mb-4">{item.desc}</p>
+                <Link to={item.link} className="text-cyan-400 text-sm font-medium hover:underline">{item.cta} →</Link>
+              </div>
+            ))}
+          </div>
+
+          <h2 className="text-2xl font-bold text-white mb-4">How to Convert YouTube to MP3</h2>
+          <ol className="list-decimal list-inside space-y-2 text-slate-400 text-sm mb-8">
+            <li>Copy the YouTube video URL from your browser.</li>
+            <li>Paste it into the <Link to="/mp3" className="text-cyan-400 hover:underline">MP3 Converter</Link> above.</li>
+            <li>Select audio quality and click Convert.</li>
+            <li>Download your MP3 file instantly — no signup needed.</li>
+          </ol>
+
+          <div className="flex flex-wrap gap-3 text-sm">
+            <span className="text-slate-500">Read more:</span>
+            <Link to="/blog/youtube-to-mp3" className="text-cyan-400 hover:underline">YouTube to MP3 Guide</Link>
+            <Link to="/blog/download-youtube-shorts" className="text-cyan-400 hover:underline">Download YouTube Shorts</Link>
+            <Link to="/blog/best-youtube-downloader" className="text-cyan-400 hover:underline">Best YouTube Downloader 2025</Link>
+          </div>
         </div>
       </section>
     </PageWrapper>

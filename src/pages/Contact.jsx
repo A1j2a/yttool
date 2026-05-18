@@ -1,123 +1,121 @@
 import { useState } from "react";
+import emailjs from "@emailjs/browser";
 import { motion } from "framer-motion";
 import { PageWrapper } from "../animations";
 import AnimatedButton from "../components/AnimatedButton";
-import {
-  Mail,
-  MessageCircle,
-  Share2,
-  Code2,
-  Zap,
-  CheckCircle,
-} from "lucide-react";
+import { Mail, CheckCircle, AlertCircle } from "lucide-react";
 import { useToast } from "../hooks/useToast";
 import Toast from "../components/Toast";
 
-const SUPPORT_CARDS = [
+// ✅ EmailJS credentials from .env
+const EMAILJS_SERVICE_ID  = import.meta.env.VITE_EMAILJS_SERVICE_ID
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
+const EMAILJS_PUBLIC_KEY  = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+
+const FIELDS = [
   {
-    icon: MessageCircle,
-    title: "Live Chat",
-    desc: "Chat with our team in real-time",
-    action: "Start Chat",
-    color: "#00f5ff",
+    name: "name",
+    label: "Name",
+    type: "text",
+    placeholder: "Your name",
+    required: true,
   },
   {
-    icon: Mail,
-    title: "Email Support",
-    desc: "support@nexatools.io",
-    action: "Send Email",
-    color: "#bf00ff",
+    name: "email",
+    label: "Email",
+    type: "email",
+    placeholder: "your@email.com",
+    required: true,
   },
   {
-    icon: Share2,
-    title: "Twitter / X",
-    desc: "@NexaTools",
-    action: "Tweet Us",
-    color: "#ff0080",
+    name: "subject",
+    label: "Subject",
+    type: "text",
+    placeholder: "How can we help?",
+    required: false,
   },
 ];
 
+function validate(form) {
+  const errors = {};
+  if (!form.name.trim()) errors.name = "Name is required";
+  if (!form.email.trim()) errors.email = "Email is required";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+    errors.email = "Enter a valid email address";
+  if (!form.message.trim()) errors.message = "Message is required";
+  else if (form.message.trim().length < 10)
+    errors.message = "Message must be at least 10 characters";
+  return errors;
+}
+
+const empty = { name: "", email: "", subject: "", message: "" };
+
 export default function Contact() {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-  });
-  const [sent, setSent] = useState(false);
+  const [form, setForm] = useState(empty);
+  const [errors, setErrors] = useState({});
+  const [status, setStatus] = useState("idle"); // idle | loading | sent
   const { toasts, addToast, removeToast } = useToast();
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+    if (errors[name]) setErrors((er) => ({ ...er, [name]: "" }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.message) {
-      addToast("Please fill all required fields", "error");
+    const errs = validate(form);
+    if (Object.keys(errs).length) {
+      setErrors(errs);
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      addToast("Please enter a valid email address", "error");
-      return;
+
+    setStatus("loading");
+    try {
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        {
+          from_name: form.name,
+          from_email: form.email,
+          subject: form.subject || "No Subject",
+          message: form.message,
+        },
+        EMAILJS_PUBLIC_KEY,
+      );
+      setStatus("sent");
+    } catch (err) {
+      console.error('EmailJS error:', err)
+      setStatus('idle')
+      addToast(err?.text || err?.message || 'Failed to send. Please try again.', 'error')
     }
-    setSent(true);
-    addToast("Message sent! We'll reply within 24 hours.", "success");
   };
 
   return (
     <PageWrapper>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-16">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
           <h1 className="text-4xl sm:text-5xl font-black text-white mb-4">
             Get in <span className="neon-text">Touch</span>
           </h1>
-          <p className="text-slate-500 max-w-xl mx-auto">
+          <p className="text-slate-500">
             Have a question or feedback? We'd love to hear from you.
           </p>
         </motion.div>
 
-        {/* Support Cards */}
-        {/* <div className="grid sm:grid-cols-3 gap-5 mb-12">
-          {SUPPORT_CARDS.map((card, i) => (
-            <motion.div
-              key={card.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="glass glass-hover rounded-2xl p-5 text-center"
-            >
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3"
-                style={{
-                  background: `${card.color}15`,
-                  border: `1px solid ${card.color}25`,
-                }}
-              >
-                <card.icon size={22} style={{ color: card.color }} />
-              </div>
-              <h3 className="text-white font-semibold mb-1">{card.title}</h3>
-              <p className="text-slate-500 text-xs mb-3">{card.desc}</p>
-              <button
-                className="text-xs font-medium transition-colors"
-                style={{ color: card.color }}
-              >
-                {card.action} →
-              </button>
-            </motion.div>
-          ))}
-        </div> */}
-
-        {/* Contact Form */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
           className="glass rounded-2xl p-8"
         >
-          {sent ? (
+          {status === "sent" ? (
             <div className="text-center py-12">
-              <CheckCircle size={48} className="text-green-400 mx-auto mb-4" />
+              <CheckCircle size={52} className="text-green-400 mx-auto mb-4" />
               <h3 className="text-white font-bold text-xl mb-2">
                 Message Sent!
               </h3>
@@ -126,8 +124,8 @@ export default function Contact() {
               </p>
               <button
                 onClick={() => {
-                  setSent(false);
-                  setForm({ name: "", email: "", subject: "", message: "" });
+                  setStatus("idle");
+                  setForm(empty);
                 }}
                 className="mt-6 text-cyan-400 text-sm hover:underline"
               >
@@ -135,69 +133,75 @@ export default function Contact() {
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit}>
-              <h2 className="text-white font-bold text-xl mb-6">
-                Send a Message
-              </h2>
+            <form onSubmit={handleSubmit} noValidate>
               <div className="grid sm:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-slate-400 text-xs font-medium mb-2">
-                    Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    placeholder="Your name"
-                    className="w-full px-4 py-3 rounded-xl glass border border-white/10 text-white placeholder-slate-600 text-sm bg-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-400 text-xs font-medium mb-2">
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    value={form.email}
-                    onChange={(e) =>
-                      setForm({ ...form, email: e.target.value })
-                    }
-                    placeholder="your@email.com"
-                    className="w-full px-4 py-3 rounded-xl glass border border-white/10 text-white placeholder-slate-600 text-sm bg-transparent"
-                  />
-                </div>
+                {FIELDS.slice(0, 2).map((f) => (
+                  <div key={f.name}>
+                    <label className="block text-slate-400 text-xs font-medium mb-2">
+                      {f.label}{" "}
+                      {f.required && <span className="text-pink-400">*</span>}
+                    </label>
+                    <input
+                      type={f.type}
+                      name={f.name}
+                      value={form[f.name]}
+                      onChange={handleChange}
+                      placeholder={f.placeholder}
+                      className={`w-full px-4 py-3 rounded-xl glass border text-white placeholder-slate-600 text-sm bg-transparent transition-all ${
+                        errors[f.name] ? "border-red-500/60" : "border-white/10"
+                      }`}
+                    />
+                    {errors[f.name] && (
+                      <p className="flex items-center gap-1 text-red-400 text-xs mt-1">
+                        <AlertCircle size={11} /> {errors[f.name]}
+                      </p>
+                    )}
+                  </div>
+                ))}
               </div>
+
               <div className="mb-4">
                 <label className="block text-slate-400 text-xs font-medium mb-2">
                   Subject
                 </label>
                 <input
                   type="text"
+                  name="subject"
                   value={form.subject}
-                  onChange={(e) =>
-                    setForm({ ...form, subject: e.target.value })
-                  }
+                  onChange={handleChange}
                   placeholder="How can we help?"
                   className="w-full px-4 py-3 rounded-xl glass border border-white/10 text-white placeholder-slate-600 text-sm bg-transparent"
                 />
               </div>
+
               <div className="mb-6">
                 <label className="block text-slate-400 text-xs font-medium mb-2">
-                  Message *
+                  Message <span className="text-pink-400">*</span>
                 </label>
                 <textarea
+                  name="message"
                   value={form.message}
-                  onChange={(e) =>
-                    setForm({ ...form, message: e.target.value })
-                  }
+                  onChange={handleChange}
                   placeholder="Tell us more..."
                   rows={5}
-                  className="w-full px-4 py-3 rounded-xl glass border border-white/10 text-white placeholder-slate-600 text-sm bg-transparent resize-none"
+                  className={`w-full px-4 py-3 rounded-xl glass border text-white placeholder-slate-600 text-sm bg-transparent resize-none transition-all ${
+                    errors.message ? "border-red-500/60" : "border-white/10"
+                  }`}
                 />
+                {errors.message && (
+                  <p className="flex items-center gap-1 text-red-400 text-xs mt-1">
+                    <AlertCircle size={11} /> {errors.message}
+                  </p>
+                )}
               </div>
-              <AnimatedButton type="submit" className="w-full sm:w-auto">
+
+              <AnimatedButton
+                type="submit"
+                disabled={status === "loading"}
+                className="w-full sm:w-auto"
+              >
                 <Mail size={16} />
-                Send Message
+                {status === "loading" ? "Sending..." : "Send Message"}
               </AnimatedButton>
             </form>
           )}
