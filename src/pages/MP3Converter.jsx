@@ -125,9 +125,11 @@ function AudioPlayer({ blobUrl }) {
   )
 }
 
-// ─── API calls (via local proxy to avoid CORS) ───────────────────────────────
+// ─── API calls (via proxy) ───────────────────────────────────────────────────
+const API = import.meta.env.VITE_API_URL
+
 async function startConversion(videoUrl) {
-  const res = await fetch(`/api/convert?url=${encodeURIComponent(videoUrl)}`)
+  const res = await fetch(`${API}/api/convert?url=${encodeURIComponent(videoUrl)}`)
   if (!res.ok) throw new Error('Failed to start conversion')
   const data = await res.json()
   if (!data.success || !data.id) throw new Error('Invalid response from converter')
@@ -137,7 +139,7 @@ async function startConversion(videoUrl) {
 async function pollProgress(id) {
   for (let i = 0; i < 60; i++) {
     await new Promise((r) => setTimeout(r, 2000))
-    const res  = await fetch(`/api/progress?id=${id}`)
+    const res  = await fetch(`${API}/api/progress?id=${id}`)
     const data = await res.json()
     if (data.success === 1 && data.download_url) return data.download_url
   }
@@ -176,7 +178,7 @@ export default function MP3Converter() {
 
       // fetch via proxy stream endpoint so blob works without CORS
       setStatus('fetching')
-      const res = await fetch(`/api/stream?url=${encodeURIComponent(downloadUrl)}`)
+      const res = await fetch(`${API}/api/stream?url=${encodeURIComponent(downloadUrl)}`)
       if (!res.ok) throw new Error('Failed to fetch audio')
       const blob = await res.blob()
       const blobUrl = URL.createObjectURL(blob)

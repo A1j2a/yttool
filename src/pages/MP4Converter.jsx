@@ -171,12 +171,10 @@ function VideoPlayer({ src, title, thumb }) {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const LOADER_START    = import.meta.env.VITE_LOADER_START
-const LOADER_PROGRESS = import.meta.env.VITE_LOADER_PROGRESS
+const API = import.meta.env.VITE_API_URL
 
 async function startConversion(url, format) {
-  const params = new URLSearchParams({ start: 1, end: 1, format, url })
-  const res = await fetch(`${LOADER_START}?${params}`)
+  const res = await fetch(`${API}/api/convert?url=${encodeURIComponent(url)}&format=${format}`)
   if (!res.ok) throw new Error('Failed to start conversion')
   const data = await res.json()
   if (!data.success || !data.id) throw new Error(data.message || 'Conversion failed')
@@ -190,7 +188,7 @@ async function startConversion(url, format) {
 async function pollProgress(id, onProgress) {
   for (let i = 0; i < 60; i++) {
     await new Promise((r) => setTimeout(r, 2000))
-    const res  = await fetch(`${LOADER_PROGRESS}?id=${id}`)
+    const res  = await fetch(`${API}/api/progress?id=${id}`)
     const data = await res.json()
     onProgress(Math.min(Math.round((data.progress / 1000) * 100), 99))
     if (data.success === 1 && data.download_url) return data.download_url

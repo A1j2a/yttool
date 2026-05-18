@@ -1,132 +1,163 @@
 import express from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
+import rateLimit from 'express-rate-limit'
 
-const app = express()
-const PORT = 3001
+const app  = express()
+const PORT = process.env.PORT || 3001
+const isProd = process.env.NODE_ENV === 'production'
 
-app.use(cors({ origin: '*' }))
+// ── Allowed origins ───────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:4173',
+  'https://yttune.app',
+  'https://www.yttune.app',
+  process.env.FRONTEND_URL,
+].filter(Boolean)
 
-// Start conversion
+// ── Security ──────────────────────────────────────────────────────────────────
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }))
+app.use(cors({
+  origin: isProd ? ALLOWED_ORIGINS : '*',
+  methods: ['GET'],
+}))
+
+// ── Rate limiting ─────────────────────────────────────────────────────────────
+const limiter = rateLimit({
+  windowMs: 60 * 1000,   // 1 minute
+  max: 30,               // 30 requests/min per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' },
+})
+app.use('/api', limiter)
+
+// ── YouTube URL validation ────────────────────────────────────────────────────
+const isValidYouTubeUrl = (url) =>
+  /^https?:\/\/(www\.)?(youtube\.com\/watch\?.*v=[\w-]{11}|youtu\.be\/[\w-]{11}|youtube\.com\/shorts\/[\w-]{11})/.test(url)
+
+// ── Start conversion ──────────────────────────────────────────────────────────
 app.get('/api/convert', async (req, res) => {
-  const { url } = req.query
+  const { url, format = 'mp3' } = req.query
   if (!url) return res.status(400).json({ error: 'url required' })
+  if (!isValidYouTubeUrl(decodeURIComponent(url)))
+    return res.status(400).json({ error: 'Invalid YouTube URL' })
   try {
-    const params = new URLSearchParams({ start: 1, end: 1, format: 'mp3', url })
-    const r = await fetch(`https://loader.to/ajax/download.php?${params}`)
+    const params = new URLSearchParams({ start: 1, end: 1, format, url })
+    const r = await fetch(`https://loader.to/ajax/download.php?${params}`, { signal: AbortSignal.timeout(15000) })
     const data = await r.json()
     res.json(data)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    res.status(502).json({ error: 'Conversion service unavailable' })
   }
 })
 
-// Poll progress
+// ── Poll progress ─────────────────────────────────────────────────────────────
 app.get('/api/progress', async (req, res) => {
   const { id } = req.query
-  if (!id) return res.status(400).json({ error: 'id required' })
+  if (!id || !/^[\w-]{10,30}$/.test(id)) return res.status(400).json({ error: 'invalid id' })
   try {
-    const r = await fetch(`https://p.savenow.to/api/progress?id=${id}`)
+    const r = await fetch(`https://p.savenow.to/api/progress?id=${id}`, { signal: AbortSignal.timeout(10000) })
     const data = await r.json()
     res.json(data)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    res.status(502).json({ error: 'Progress service unavailable' })
   }
 })
 
-// Stream MP3 as blob (proxy to avoid CORS on audio)
+// ── Stream MP3 proxy ──────────────────────────────────────────────────────────
 app.get('/api/stream', async (req, res) => {
   const { url } = req.query
   if (!url) return res.status(400).json({ error: 'url required' })
+  const decoded = decodeURIComponent(url)
+  if (!decoded.startsWith('https://')) return res.status(400).json({ error: 'invalid url' })
   try {
-    const r = await fetch(decodeURIComponent(url))
+    const r = await fetch(decoded, { signal: AbortSignal.timeout(30000) })
     if (!r.ok) return res.status(502).json({ error: 'upstream error' })
     res.setHeader('Content-Type', 'audio/mpeg')
     res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Cache-Control', 'no-store')
     r.body.pipe(res)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    if (!res.headersSent) res.status(502).json({ error: 'Stream failed' })
   }
 })
 
-// Fetch YouTube transcript via timedtext API
+// ── YouTube info (transcript + description + tags) ────────────────────────────
 async function fetchTranscript(videoId) {
   try {
     const pageRes = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+      signal: AbortSignal.timeout(10000),
     })
     const html = await pageRes.text()
-
-    // Extract caption tracks from ytInitialPlayerResponse
     const match = html.match(/"captionTracks":\s*(\[.*?\])/)
     if (!match) return 'Transcript not available for this video.'
-
     const tracks = JSON.parse(match[1])
     const track = tracks.find(t => t.languageCode === 'en') || tracks[0]
     if (!track) return 'Transcript not available for this video.'
-
-    const xmlRes = await fetch(track.baseUrl)
+    const xmlRes = await fetch(track.baseUrl, { signal: AbortSignal.timeout(10000) })
     const xml = await xmlRes.text()
-    const texts = [...xml.matchAll(/<text[^>]*>([^<]*)<\/text>/g)]
-    return texts.map(m => m[1].replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>')).join(' ')
+    return [...xml.matchAll(/<text[^>]*>([^<]*)<\/text>/g)]
+      .map(m => m[1].replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>'))
+      .join(' ')
   } catch {
     return 'Transcript not available for this video.'
   }
 }
 
-// YouTube video info: transcript + description + tags
 app.get('/api/yt-info', async (req, res) => {
   const { url } = req.query
   if (!url) return res.status(400).json({ error: 'url required' })
-
-  // Extract video ID
   const match = url.match(/(?:v=|youtu\.be\/)([\w-]{11})/)
   if (!match) return res.status(400).json({ error: 'Invalid YouTube URL' })
   const videoId = match[1]
-
   try {
     const transcript = await fetchTranscript(videoId)
-
-    let description = ''
-    let tags = []
+    let description = '', tags = []
     try {
       const pageRes = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+        signal: AbortSignal.timeout(10000),
       })
       const html = await pageRes.text()
-
-      // Full description from ytInitialData
       const dataMatch = html.match(/var ytInitialData = (.*?);<\/script>/s)
       if (dataMatch) {
         try {
           const ytData = JSON.parse(dataMatch[1])
-          const videoDetails = ytData?.contents?.twoColumnWatchNextResults?.results?.results?.contents
-          if (videoDetails) {
-            for (const item of videoDetails) {
+          const contents = ytData?.contents?.twoColumnWatchNextResults?.results?.results?.contents
+          if (contents) {
+            for (const item of contents) {
               const desc = item?.videoSecondaryInfoRenderer?.attributedDescription?.content
               if (desc) { description = desc; break }
             }
           }
         } catch { /* ignore */ }
       }
-
-      // Fallback to meta description
       if (!description) {
         const descMatch = html.match(/<meta name="description" content="([^"]+)"/)
         if (descMatch) description = descMatch[1]
       }
-
-      // Tags from meta keywords
       const tagMatch = html.match(/<meta name="keywords" content="([^"]+)"/)
       if (tagMatch) tags = tagMatch[1].split(',').map(t => t.trim()).filter(Boolean)
     } catch { /* ignore */ }
-
     res.json({ videoId, transcript, description, tags })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    res.status(500).json({ error: 'Failed to fetch video info' })
   }
 })
 
-app.listen(PORT, () => console.log(`Proxy running on http://localhost:${PORT}`))
+// ── Health check ──────────────────────────────────────────────────────────────
+app.get('/health', (_, res) => res.json({ status: 'ok', ts: Date.now() }))
+
+// ── 404 ───────────────────────────────────────────────────────────────────────
+app.use((_, res) => res.status(404).json({ error: 'Not found' }))
+
+// ── Start ─────────────────────────────────────────────────────────────────────
+app.listen(PORT, () => console.log(`Server running on port ${PORT} [${isProd ? 'production' : 'development'}]`))
 
 process.on('SIGTERM', () => process.exit(0))
-process.on('SIGINT', () => process.exit(0))
+process.on('SIGINT',  () => process.exit(0))
+process.on('uncaughtException',  (e) => console.error('Uncaught:', e.message))
+process.on('unhandledRejection', (e) => console.error('Unhandled:', e))

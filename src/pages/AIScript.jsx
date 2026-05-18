@@ -25,7 +25,7 @@ export default function AIScript() {
     setStatus('loading')
     setData(null)
     try {
-      const res = await fetch(`http://localhost:3001/api/yt-info?url=${encodeURIComponent(url)}`)
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/yt-info?url=${encodeURIComponent(url)}`)
       const text = await res.text()
       let json
       try { json = JSON.parse(text) } catch { throw new Error('Server nahi chal raha — pehle: npm run server') }
