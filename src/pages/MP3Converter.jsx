@@ -129,21 +129,41 @@ function AudioPlayer({ blobUrl }) {
 const API = import.meta.env.VITE_API_URL
 
 async function startConversion(videoUrl) {
-  const res = await fetch(`${API}/api/convert?url=${encodeURIComponent(videoUrl)}`)
-  if (!res.ok) throw new Error('Failed to start conversion')
-  const data = await res.json()
-  if (!data.success || !data.id) throw new Error('Invalid response from converter')
-  return { id: data.id, title: data.title || 'Audio Track', thumb: data.info?.image || null }
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await fetch(`${API}/api/convert?url=${encodeURIComponent(videoUrl)}`, { signal: AbortSignal.timeout(30000) })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      console.log('[MP3] convert response:', data)
+      if (!data.id) throw new Error('Invalid response from converter')
+      return { id: data.id, title: data.title || 'Audio Track', thumb: data.info?.image || null }
+    } catch (e) {
+      console.warn(`[MP3] startConversion attempt ${attempt} failed:`, e.message)
+      if (attempt === 3) throw new Error('Failed to start conversion — server may be waking up, please try again')
+      await new Promise((r) => setTimeout(r, 5000))
+    }
+  }
 }
 
 async function pollProgress(id) {
-  for (let i = 0; i < 60; i++) {
-    await new Promise((r) => setTimeout(r, 2000))
-    const res  = await fetch(`${API}/api/progress?id=${id}`)
-    const data = await res.json()
-    if (data.success === 1 && data.download_url) return data.download_url
+  const MAX_RETRIES = 90
+  const DELAY_MS    = 4000
+  for (let i = 0; i < MAX_RETRIES; i++) {
+    await new Promise((r) => setTimeout(r, DELAY_MS))
+    try {
+      const res  = await fetch(`${API}/api/progress?id=${id}`)
+      if (!res.ok) { console.warn(`[MP3] progress HTTP ${res.status}, retry ${i + 1}`); continue }
+      const data = await res.json()
+      console.log(`[MP3] progress attempt ${i + 1}:`, data)
+      if (data.download_url) {
+        console.log('[MP3] download_url ready:', data.download_url)
+        return data.download_url
+      }
+    } catch (e) {
+      console.warn(`[MP3] progress fetch error attempt ${i + 1}:`, e.message)
+    }
   }
-  throw new Error('Conversion timed out')
+  throw new Error('Conversion timed out — please try again')
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -334,7 +354,7 @@ export default function MP3Converter() {
           >
             <p className="text-red-400 font-medium mb-1">Conversion failed</p>
             <p className="text-slate-500 text-sm mb-4">
-              The video may be unavailable or restricted. Try a different URL.
+              Server waking up or video unavailable. Please wait 30 seconds and try again.
             </p>
             <button onClick={() => setStatus('idle')} className="text-cyan-400 text-sm hover:underline">
               Try again
