@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Zap, Sun, Moon } from 'lucide-react'
+import { Menu, X, Sun, Moon, Zap } from 'lucide-react'
 import { NAV_LINKS } from '../constants'
 import { useTheme } from '../context/ThemeContext'
+import logo from '../assets/YTTune.png'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
@@ -31,12 +32,19 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
+
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center animate-pulse-glow">
-                <Zap size={16} className="text-white" />
+              <div className="px-2 py-1 rounded-xl bg-white/90 backdrop-blur-sm border border-white/20 shadow-md shadow-black/10 group-hover:shadow-lg transition-all">
+                <img
+                  src={logo}
+                  alt="YTTune"
+                  width={96}
+                  height={28}
+                  className="h-7 w-auto object-contain"
+                  loading="eager"
+                />
               </div>
-              <span className="text-xl font-bold neon-text">NexaTools</span>
             </Link>
 
             {/* Desktop Nav */}
@@ -58,7 +66,6 @@ export default function Navbar() {
 
             {/* Right Actions */}
             <div className="flex items-center gap-3">
-              {/* Theme Toggle */}
               <button
                 onClick={toggle}
                 className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all"
@@ -67,7 +74,7 @@ export default function Navbar() {
                 {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
               </button>
               <Link
-                to="/"
+                to="/mp3"
                 className="hidden md:flex items-center gap-2 px-4 py-2 rounded-lg gradient-bg text-white text-sm font-semibold hover:opacity-90 transition-all hover:scale-105"
               >
                 <Zap size={14} />
@@ -103,7 +110,9 @@ export default function Navbar() {
               className="fixed top-0 right-0 bottom-0 z-50 w-72 glass border-l border-white/10 md:hidden"
             >
               <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <span className="font-bold neon-text text-lg">NexaTools</span>
+                <div className="px-2 py-1 rounded-xl bg-white/90 border border-white/20">
+                  <img src={logo} alt="YTTune" className="h-6 w-auto object-contain" loading="lazy" />
+                </div>
                 <button onClick={() => setMobileOpen(false)} className="p-2 text-slate-400 hover:text-white">
                   <X size={20} />
                 </button>
@@ -123,7 +132,7 @@ export default function Navbar() {
                   </Link>
                 ))}
                 <Link
-                  to="/"
+                  to="/mp3"
                   className="mt-4 flex items-center justify-center gap-2 px-4 py-3 rounded-lg gradient-bg text-white text-sm font-semibold"
                 >
                   <Zap size={14} />

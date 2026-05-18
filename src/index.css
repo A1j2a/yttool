@@ -1,10 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  --color-neon-cyan: #00f5ff;
-  --color-neon-purple: #bf00ff;
-  --color-neon-pink: #ff0080;
-  --color-neon-green: #00ff88;
+  --color-neon-red:  #ff2d2d;
+  --color-neon-dark: #1a1a1a;
+  --color-neon-gray: #9ca3af;
   --font-display: "Inter", sans-serif;
 }
 
@@ -13,8 +12,8 @@
   50% { transform: translateY(-20px); }
 }
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(0, 245, 255, 0.3); }
-  50% { box-shadow: 0 0 40px rgba(0, 245, 255, 0.7), 0 0 80px rgba(0, 245, 255, 0.3); }
+  0%, 100% { box-shadow: 0 0 20px rgba(255, 45, 45, 0.3); }
+  50%       { box-shadow: 0 0 40px rgba(255, 45, 45, 0.7), 0 0 80px rgba(255, 45, 45, 0.2); }
 }
 @keyframes gradient-shift {
   0%   { background-position: 0% 50%; }
@@ -45,90 +44,123 @@ body {
 /* ── Light mode ──────────────────────────────────────────────────────────── */
 body.light {
   color: #1a202c;
-  background: #ffffff;
-  background-attachment: fixed;
+  background: #f8faff;
 }
 
-/* Remove the ::before since we use background directly */
-body.light::before { display: none; }
+/* Subtle dot pattern background */
+body.light::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(99,102,241,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(6,182,212,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(236,72,153,0.05) 0%, transparent 60%);
+}
 
-/* Glass cards */
+/* Glass cards — white with shadow */
 body.light .glass {
-  background: rgba(255, 255, 255, 0.72) !important;
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 0, 0, 0.07) !important;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  background: #ffffff !important;
+  backdrop-filter: none;
+  border: 1px solid #e8edf5 !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04) !important;
 }
 body.light .glass-hover:hover {
-  background: rgba(255, 255, 255, 0.92) !important;
-  border-color: rgba(0, 180, 220, 0.35) !important;
+  background: #ffffff !important;
+  border-color: #a5b4fc !important;
+  box-shadow: 0 8px 30px rgba(99,102,241,0.12), 0 2px 8px rgba(0,0,0,0.06) !important;
   transform: translateY(-2px);
 }
 
 /* Navbar */
 body.light nav {
-  background: rgba(255, 255, 255, 0.85) !important;
-  border-bottom-color: rgba(0, 0, 0, 0.07) !important;
+  background: rgba(255,255,255,0.95) !important;
+  border-bottom: 1px solid #e8edf5 !important;
+  box-shadow: 0 1px 12px rgba(0,0,0,0.06) !important;
+  backdrop-filter: blur(12px);
 }
 
+/* Active nav link */
+body.light .text-cyan-400 { color: #dc2626 !important; }
+body.light .bg-cyan-400\/10 { background: rgba(220,38,38,0.08) !important; }
+body.light .border-cyan-400\/50 { border-color: rgba(220,38,38,0.4) !important; }
+body.light .border-cyan-500\/20 { border-color: rgba(220,38,38,0.15) !important; }
+body.light .bg-cyan-500\/10 { background: rgba(220,38,38,0.06) !important; }
+body.light .bg-cyan-500\/20 { background: rgba(220,38,38,0.1) !important; }
+body.light .bg-cyan-500\/30 { background: rgba(220,38,38,0.15) !important; }
+body.light .border-cyan-500\/30 { border-color: rgba(220,38,38,0.25) !important; }
+body.light .shadow-cyan-500\/30 { box-shadow: none !important; }
+
 /* Text */
-body.light .text-white       { color: #1a202c !important; }
-body.light .text-slate-300   { color: #2d3748 !important; }
-body.light .text-slate-400   { color: #4a5568 !important; }
-body.light .text-slate-500   { color: #718096 !important; }
-body.light .text-slate-600   { color: #718096 !important; }
-body.light .text-slate-700   { color: #4a5568 !important; }
-body.light .placeholder-slate-600::placeholder { color: #a0aec0 !important; }
+body.light .text-white       { color: #111827 !important; }
+body.light .text-slate-300   { color: #374151 !important; }
+body.light .text-slate-400   { color: #4b5563 !important; }
+body.light .text-slate-500   { color: #6b7280 !important; }
+body.light .text-slate-600   { color: #6b7280 !important; }
+body.light .text-slate-700   { color: #4b5563 !important; }
+body.light .placeholder-slate-600::placeholder { color: #9ca3af !important; }
 
 /* Backgrounds */
-body.light .bg-black\/20     { background: rgba(0, 0, 0, 0.04) !important; }
-body.light .bg-black\/30     { background: rgba(0, 0, 0, 0.05) !important; }
-body.light .bg-black\/40     { background: rgba(0, 0, 0, 0.06) !important; }
-body.light .bg-black\/60     { background: rgba(0, 0, 0, 0.08) !important; }
+body.light .bg-black\/20  { background: #f3f4f6 !important; }
+body.light .bg-black\/30  { background: #f3f4f6 !important; }
+body.light .bg-black\/40  { background: #e5e7eb !important; }
+body.light .bg-black\/60  { background: rgba(0,0,0,0.35) !important; }
+body.light .bg-transparent { background: transparent !important; }
 
 /* Borders */
-body.light .border-white\/5  { border-color: rgba(0, 0, 0, 0.05) !important; }
-body.light .border-white\/10 { border-color: rgba(0, 0, 0, 0.08) !important; }
-body.light .border-white\/20 { border-color: rgba(0, 0, 0, 0.12) !important; }
+body.light .border-white\/5  { border-color: #f1f5f9 !important; }
+body.light .border-white\/10 { border-color: #e2e8f0 !important; }
+body.light .border-white\/20 { border-color: #cbd5e1 !important; }
+body.light .border-white\/5.border-b { border-bottom-color: #e2e8f0 !important; }
 
-/* Hover bg */
-body.light .hover\:bg-white\/5:hover  { background: rgba(0, 0, 0, 0.04) !important; }
-body.light .hover\:bg-white\/20:hover { background: rgba(0, 0, 0, 0.06) !important; }
+/* Hover */
+body.light .hover\:bg-white\/5:hover  { background: #f8fafc !important; }
+body.light .hover\:bg-white\/20:hover { background: #f1f5f9 !important; }
+body.light .hover\:text-white:hover   { color: #111827 !important; }
+body.light .hover\:border-white\/20:hover { border-color: #a5b4fc !important; }
 
 /* Inputs */
 body.light input,
 body.light textarea,
 body.light select {
-  background: rgba(255, 255, 255, 0.85) !important;
-  color: #1a202c !important;
-  border-color: rgba(0, 0, 0, 0.1) !important;
+  background: #f8faff !important;
+  color: #111827 !important;
+  border-color: #e2e8f0 !important;
 }
 body.light input:focus,
 body.light textarea:focus {
-  border-color: rgba(0, 180, 220, 0.6) !important;
-  box-shadow: 0 0 0 3px rgba(0, 180, 220, 0.12) !important;
+  background: #ffffff !important;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.1) !important;
 }
 
-/* Blobs — lighter in light mode */
-body.light .blob { opacity: 0.08; }
+/* Progress bars bg */
+body.light .bg-white\/5  { background: #f1f5f9 !important; }
+body.light .bg-white\/10 { background: #e2e8f0 !important; }
 
-/* neon-border fix */
+/* Dividers */
+body.light .h-px { background: #e2e8f0 !important; }
+
+/* Blobs hidden */
+body.light .blob { opacity: 0 !important; }
+
+/* neon-border */
 body.light .neon-border {
-  background: linear-gradient(#f0f6ff, #f0f6ff) padding-box,
-    linear-gradient(135deg, #00b4d8, #9b5de5) border-box;
+  background: linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(135deg, #ff2d2d, #4b5563) border-box;
 }
 
 /* Scrollbar */
-body.light ::-webkit-scrollbar-track { background: #e2e8f0; }
-body.light ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #00b4d8, #9b5de5);
-}
+body.light ::-webkit-scrollbar-track { background: #f1f5f9; }
+body.light ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #ff2d2d, #4b5563); }
 
 /* ── Scrollbar (dark) ────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #060d14; }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #00f5ff, #bf00ff);
+  background: linear-gradient(180deg, #ff2d2d, #4b5563);
   border-radius: 3px;
 }
 
@@ -146,7 +178,7 @@ body.light ::-webkit-scrollbar-thumb {
 }
 
 .neon-text {
-  background: linear-gradient(135deg, #00f5ff, #bf00ff);
+  background: linear-gradient(135deg, #ff2d2d, #4b5563);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -154,10 +186,10 @@ body.light ::-webkit-scrollbar-thumb {
 .neon-border {
   border: 1px solid transparent;
   background: linear-gradient(#020408, #020408) padding-box,
-    linear-gradient(135deg, #00f5ff, #bf00ff) border-box;
+    linear-gradient(135deg, #ff2d2d, #4b5563) border-box;
 }
 .gradient-bg {
-  background: linear-gradient(135deg, #00f5ff, #bf00ff, #ff0080);
+  background: linear-gradient(135deg, #ff2d2d, #b91c1c, #4b5563);
   background-size: 200% 200%;
   animation: gradient-shift 8s ease infinite;
 }

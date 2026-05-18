@@ -216,7 +216,7 @@ export default function MP3Converter() {
           <h1 className="text-4xl font-black text-white mb-3">
             Video to <span className="neon-text">MP3</span>
           </h1>
-          <p className="text-slate-500">Extract high-quality audio from any YouTube video instantly.</p>
+          <p className="text-slate-500">Extract high-quality audio from any YouTube video — 100% free, no signup.</p>
         </motion.div>
 
         {/* Input Card */}

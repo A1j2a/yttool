@@ -1,22 +1,23 @@
 import { Link } from 'react-router-dom'
-import { Zap, Share2, Code2, Rss, Globe, Heart } from 'lucide-react'
+import { Share2, Code2, Rss, Globe, Heart } from 'lucide-react'
 import { NAV_LINKS } from '../constants'
+import logo from '../assets/YTTune.png'
 
 export default function Footer() {
   return (
     <footer className="border-t border-white/5 mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+
           {/* Brand */}
           <div className="md:col-span-1">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center">
-                <Zap size={16} className="text-white" />
+            <Link to="/" className="flex items-center gap-2 mb-4 w-fit">
+              <div className="px-2 py-1 rounded-xl bg-white/90 border border-white/20 shadow-sm">
+                <img src={logo} alt="YTTune" className="h-7 w-auto object-contain" loading="lazy" />
               </div>
-              <span className="text-xl font-bold neon-text">NexaTools</span>
             </Link>
             <p className="text-slate-500 text-sm leading-relaxed mb-6">
-              The ultimate AI-powered media utility platform. Convert, create, and automate.
+              Free YouTube MP3 &amp; video downloader. Convert and download YouTube videos instantly — no signup needed.
             </p>
             <div className="flex items-center gap-3">
               {[Share2, Code2, Rss, Globe].map((Icon, i) => (
@@ -35,11 +36,9 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4">Tools</h4>
             <ul className="space-y-2">
-              {[['MP3 Converter', '/mp3'], ['MP4 Converter', '/mp4'], ['AI Script', '/ai-script'], ['All Tools', '/tools']].map(([label, path]) => (
+              {[['YouTube to MP3', '/mp3'], ['YouTube to MP4', '/mp4'], ['AI Script', '/ai-script'], ['All Tools', '/tools']].map(([label, path]) => (
                 <li key={path}>
-                  <Link to={path} className="text-slate-500 hover:text-cyan-400 text-sm transition-colors">
-                    {label}
-                  </Link>
+                  <Link to={path} className="text-slate-500 hover:text-cyan-400 text-sm transition-colors">{label}</Link>
                 </li>
               ))}
             </ul>
@@ -49,11 +48,9 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4">Company</h4>
             <ul className="space-y-2">
-              {[['About', '/about'], ['Pricing', '/pricing'], ['Contact', '/contact']].map(([label, path]) => (
+              {[['About', '/about'], ['Contact', '/contact'], ['YouTube to MP3 Guide', '/blog/youtube-to-mp3'], ['Best YT Downloader', '/blog/best-youtube-downloader']].map(([label, path]) => (
                 <li key={path}>
-                  <Link to={path} className="text-slate-500 hover:text-cyan-400 text-sm transition-colors">
-                    {label}
-                  </Link>
+                  <Link to={path} className="text-slate-500 hover:text-cyan-400 text-sm transition-colors">{label}</Link>
                 </li>
               ))}
             </ul>
@@ -77,7 +74,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-slate-600 text-sm">© 2025 NexaTools. All rights reserved.</p>
+          <p className="text-slate-600 text-sm">© 2025 YTTune. All rights reserved.</p>
           <p className="text-slate-600 text-sm flex items-center gap-1">
             Made with <Heart size={12} className="text-pink-500" /> for creators worldwide
           </p>

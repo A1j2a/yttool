@@ -15,9 +15,9 @@ export default function Landing() {
   const navigate = useNavigate()
 
   useSEO({
-    title: 'NexaTools — Free YouTube to MP3 & MP4 Converter | AI Script Generator',
-    description: 'Convert YouTube videos to MP3 or MP4 for free. No signup, no watermark. Download HD videos and generate AI scripts instantly.',
-    canonical: 'https://nexatools.io/',
+    title: 'YTTune - Free YouTube MP3 & Video Downloader',
+    description: 'Download YouTube videos and convert YouTube to MP3 instantly with YTTune. Fast, free, high-quality MP3 and MP4 downloader.',
+    canonical: 'https://yttune.app/',
   })
 
   return (
@@ -231,7 +231,7 @@ export default function Landing() {
             className="text-center mb-12"
           >
             <h2 className="text-3xl sm:text-4xl font-black text-white mb-4">
-              Why <span className="neon-text">NexaTools?</span>
+              Why <span className="neon-text">YTTune?</span>
             </h2>
           </motion.div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -336,7 +336,7 @@ export default function Landing() {
             <h2 className="text-3xl sm:text-4xl font-black text-white mb-4 relative z-10">
               Start using free tools today
             </h2>
-            <p className="text-slate-400 mb-8 relative z-10">Join 850,000+ creators using NexaTools every day — completely free.</p>
+            <p className="text-slate-400 mb-8 relative z-10">Join 850,000+ creators using YTTune every day — completely free.</p>
             <div className="flex flex-wrap gap-4 justify-center relative z-10">
               <AnimatedButton onClick={() => navigate('/tools')}>
                 Start for Free <ArrowRight size={16} />
@@ -351,9 +351,9 @@ export default function Landing() {
       {/* SEO Content + Internal Links */}
       <section className="py-16 px-4">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold text-white mb-6">Free YouTube Downloader & Converter Tools</h2>
+          <h2 className="text-2xl font-bold text-white mb-6">Free YouTube Downloader &amp; Converter — YTTune</h2>
           <p className="text-slate-400 leading-relaxed mb-8">
-            NexaTools is the fastest free online tool to convert YouTube videos to MP3 audio or download them as MP4 video.
+            YTTune is the fastest free online tool to convert YouTube videos to MP3 audio or download them as MP4 video.
             No software installation, no account required — just paste your URL and go.
           </p>
           <div className="grid sm:grid-cols-3 gap-4 mb-10">

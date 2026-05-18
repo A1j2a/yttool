@@ -257,7 +257,7 @@ export default function MP4Converter() {
           <h1 className="text-4xl font-black text-white mb-3">
             Video to <span className="neon-text">MP4</span>
           </h1>
-          <p className="text-slate-500">Download videos in HD quality from 1000+ platforms.</p>
+          <p className="text-slate-500">Download videos in HD quality — free, no watermark, no signup.</p>
         </motion.div>
 
         {/* Input Card */}

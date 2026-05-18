@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://nexatools.io/sitemap.xml
+Sitemap: https://yttune.app/sitemap.xml

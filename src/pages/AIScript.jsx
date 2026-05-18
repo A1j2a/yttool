@@ -62,7 +62,7 @@ export default function AIScript() {
           <h1 className="text-4xl font-black text-white mb-3">
             YouTube <span className="neon-text">Script Extractor</span>
           </h1>
-          <p className="text-slate-500">Paste any YouTube URL to get the full transcript, description and tags — free.</p>
+          <p className="text-slate-500">Paste any YouTube URL to get the full transcript, description and tags — free, no signup.</p>
         </motion.div>
 
         {/* URL Input */}
