@@ -208,55 +208,26 @@ function VideoPlayer({ src, title, thumb }) {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const API = import.meta.env.VITE_API_URL;
 
-async function startConversion(url, format) {
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    try {
-      const res = await fetch(
-        `${API}/api/convert?url=${encodeURIComponent(url)}&format=${format}`,
-        { signal: AbortSignal.timeout(30000) }
-      );
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      console.log("[MP4] convert response:", data);
-      if (!data.id) throw new Error(data.message || "Conversion failed");
-      return {
-        id: data.id,
-        title: data.title || "Video",
-        thumb: data.info?.image || null,
-      };
-    } catch (e) {
-      console.warn(`[MP4] startConversion attempt ${attempt} failed:`, e.message);
-      if (attempt === 3) throw new Error("Failed to start conversion — server may be waking up, please try again");
-      await new Promise((r) => setTimeout(r, 5000));
-    }
+async function convertToMp4(url, resolution) {
+  const res = await fetch(`${API}/api/mp4?url=${encodeURIComponent(url)}&resolution=${resolution}`)
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.error || `Server error ${res.status}`)
   }
-}
-
-async function pollProgress(id, onProgress) {
-  const MAX_RETRIES = 90;
-  const DELAY_MS = 4000;
-  for (let i = 0; i < MAX_RETRIES; i++) {
-    await new Promise((r) => setTimeout(r, DELAY_MS));
-    try {
-      const res = await fetch(`${API}/api/progress?id=${id}`);
-      if (!res.ok) { console.warn(`[MP4] progress HTTP ${res.status}, retry ${i + 1}`); continue; }
-      const data = await res.json();
-      console.log(`[MP4] progress attempt ${i + 1}:`, data);
-      if (data.progress != null) onProgress(Math.min(Math.round((data.progress / 1000) * 100), 99));
-      if (data.download_url) {
-        console.log("[MP4] download_url ready:", data.download_url);
-        return data.download_url;
-      }
-    } catch (e) {
-      console.warn(`[MP4] progress fetch error attempt ${i + 1}:`, e.message);
-    }
-  }
-  throw new Error("Conversion timed out — please try again");
+  const title = decodeURIComponent(res.headers.get('X-Video-Title') || 'Video')
+  const thumb = decodeURIComponent(res.headers.get('X-Video-Thumb') || '')
+  const blob = await res.blob()
+  const downloadUrl = URL.createObjectURL(blob)
+  return { title, thumb, downloadUrl }
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function MP4Converter() {
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState(() => {
+    const saved = localStorage.getItem('yt_url')
+    if (saved) { localStorage.removeItem('yt_url'); return saved }
+    return ''
+  });
   const [resolution, setResolution] = useState(RESOLUTIONS[2]); // 720p default
   const [status, setStatus] = useState("idle");
   const [progress, setProgress] = useState(0);
@@ -269,23 +240,15 @@ export default function MP4Converter() {
       return;
     }
     setStatus("loading");
-    setProgress(5);
+    setProgress(10);
     setResult(null);
 
     try {
-      const { id, title, thumb } = await startConversion(
-        url.trim(),
-        resolution.format,
-      );
-      setProgress(15);
-
-      const downloadUrl = await pollProgress(id, (pct) =>
-        setProgress(15 + pct * 0.84),
-      );
-
-      setProgress(100);
-      setResult({ title, thumb, downloadUrl });
-      setStatus("done");
+      setProgress(30)
+      const { title, thumb, downloadUrl } = await convertToMp4(url.trim(), resolution.format)
+      setProgress(100)
+      setResult({ title, thumb, downloadUrl })
+      setStatus("done")
     } catch (err) {
       setStatus("error");
       addToast(err.message || "Conversion failed", "error");

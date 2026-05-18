@@ -74,13 +74,13 @@ export default function Landing() {
               />
               <div className="flex gap-2">
                 <button
-                  onClick={() => navigate('/mp3')}
+                  onClick={() => { if (url.trim()) localStorage.setItem('yt_url', url.trim()); navigate('/mp3') }}
                   className="px-4 py-3 rounded-xl bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-sm font-medium hover:bg-cyan-500/30 transition-all whitespace-nowrap"
                 >
                   MP3
                 </button>
                 <button
-                  onClick={() => navigate('/mp4')}
+                  onClick={() => { if (url.trim()) localStorage.setItem('yt_url', url.trim()); navigate('/mp4') }}
                   className="px-4 py-3 rounded-xl gradient-bg text-white text-sm font-semibold hover:opacity-90 transition-all whitespace-nowrap flex items-center gap-2"
                 >
                   <Download size={14} />

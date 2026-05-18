@@ -2,6 +2,13 @@ import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
+import { createRequire } from 'module'
+import { spawn } from 'child_process'
+
+const require = createRequire(import.meta.url)
+const ffmpegStatic = require('ffmpeg-static')
+const FFMPEG = ffmpegStatic || '/opt/homebrew/bin/ffmpeg'
+const YTDLP  = process.env.YTDLP_PATH || '/opt/homebrew/bin/yt-dlp'
 
 const app  = express()
 const PORT = process.env.PORT || 3001
@@ -37,54 +44,103 @@ app.use('/api', limiter)
 const isValidYouTubeUrl = (url) =>
   /^https?:\/\/(www\.)?(youtube\.com\/watch\?.*v=[\w-]{11}|youtu\.be\/[\w-]{11}|youtube\.com\/shorts\/[\w-]{11})/.test(url)
 
-// ── Start conversion ──────────────────────────────────────────────────────────
-app.get('/api/convert', async (req, res) => {
-  const { url, format = 'mp3' } = req.query
-  if (!url) return res.status(400).json({ error: 'url required' })
-  if (!isValidYouTubeUrl(decodeURIComponent(url)))
-    return res.status(400).json({ error: 'Invalid YouTube URL' })
-  try {
-    const params = new URLSearchParams({ start: 1, end: 1, format, url })
-    const r = await fetch(`https://loader.to/ajax/download.php?${params}`, { signal: AbortSignal.timeout(15000) })
-    const data = await r.json()
-    res.json(data)
-  } catch (e) {
-    res.status(502).json({ error: 'Conversion service unavailable' })
-  }
-})
+// ── shared: get video info fast ──────────────────────────────────────────────
+function getVideoInfo(url) {
+  return new Promise((resolve, reject) => {
+    const proc = spawn(YTDLP, ['--print', '%(title)s\n%(thumbnail)s', '--no-playlist', url])
+    let out = ''
+    proc.stdout.on('data', (d) => out += d)
+    proc.on('close', (code) => {
+      if (code !== 0) return reject(new Error('yt-dlp info failed'))
+      const [title = 'Track', thumb = ''] = out.trim().split('\n')
+      resolve({ title, thumb })
+    })
+  })
+}
 
-// ── Poll progress ─────────────────────────────────────────────────────────────
-app.get('/api/progress', async (req, res) => {
-  const { id } = req.query
-  if (!id || !/^[\w-]{10,30}$/.test(id)) return res.status(400).json({ error: 'invalid id' })
-  try {
-    const r = await fetch(`https://p.savenow.to/api/progress?id=${id}`, { signal: AbortSignal.timeout(10000) })
-    const data = await r.json()
-    res.json(data)
-  } catch (e) {
-    res.status(502).json({ error: 'Progress service unavailable' })
-  }
-})
-
-// ── Stream MP3 proxy ──────────────────────────────────────────────────────────
-app.get('/api/stream', async (req, res) => {
+// ── MP3: yt-dlp → ffmpeg → stream ────────────────────────────────────────────
+app.get('/api/mp3', async (req, res) => {
   const { url } = req.query
   if (!url) return res.status(400).json({ error: 'url required' })
   const decoded = decodeURIComponent(url)
-  if (!decoded.startsWith('https://')) return res.status(400).json({ error: 'invalid url' })
+  if (!isValidYouTubeUrl(decoded)) return res.status(400).json({ error: 'Invalid YouTube URL' })
+
   try {
-    const r = await fetch(decoded, { signal: AbortSignal.timeout(30000) })
-    if (!r.ok) return res.status(502).json({ error: 'upstream error' })
+    const { title, thumb } = await getVideoInfo(decoded)
+    const safeTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase()
+
     res.setHeader('Content-Type', 'audio/mpeg')
-    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Content-Disposition', `attachment; filename="${safeTitle}.mp3"`)
+    res.setHeader('X-Video-Title', encodeURIComponent(title))
+    res.setHeader('X-Video-Thumb', encodeURIComponent(thumb))
     res.setHeader('Cache-Control', 'no-store')
-    r.body.pipe(res)
+
+    // Stream audio via yt-dlp | ffmpeg
+    const ytProc = spawn(YTDLP, [
+      '-f', 'bestaudio',
+      '--no-playlist',
+      '-o', '-',
+      decoded
+    ])
+
+    const ffProc = spawn(FFMPEG, [
+      '-i', 'pipe:0',
+      '-vn',
+      '-ab', '128k',
+      '-f', 'mp3',
+      'pipe:1'
+    ])
+
+    ytProc.stdout.pipe(ffProc.stdin)
+    ffProc.stdout.pipe(res)
+
+    ytProc.on('error', (e) => { console.error('[yt-dlp]', e.message); res.destroy() })
+    ffProc.on('error', (e) => { console.error('[ffmpeg]', e.message); res.destroy() })
+    ffProc.stderr.on('data', (d) => console.log('[ffmpeg]', d.toString()))
+    ytProc.stderr.on('data', (d) => console.log('[yt-dlp]', d.toString()))
+
+    res.on('close', () => { ytProc.kill(); ffProc.kill() })
   } catch (e) {
-    if (!res.headersSent) res.status(502).json({ error: 'Stream failed' })
+    console.error('[mp3]', e.message)
+    if (!res.headersSent) res.status(502).json({ error: e.message || 'Failed to fetch video' })
   }
 })
 
-// ── YouTube info (transcript + description + tags) ────────────────────────────
+// ── MP4: yt-dlp → stream ──────────────────────────────────────────────────────
+app.get('/api/mp4', async (req, res) => {
+  const { url, resolution = '720' } = req.query
+  if (!url) return res.status(400).json({ error: 'url required' })
+  const decoded = decodeURIComponent(url)
+  if (!isValidYouTubeUrl(decoded)) return res.status(400).json({ error: 'Invalid YouTube URL' })
+
+  try {
+    const { title, thumb } = await getVideoInfo(decoded)
+    const safeTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase()
+
+    res.setHeader('Content-Type', 'video/mp4')
+    res.setHeader('Content-Disposition', `attachment; filename="${safeTitle}.mp4"`)
+    res.setHeader('X-Video-Title', encodeURIComponent(title))
+    res.setHeader('X-Video-Thumb', encodeURIComponent(thumb))
+    res.setHeader('Cache-Control', 'no-store')
+
+    const format = `bestvideo[height<=${resolution}][ext=mp4]+bestaudio[ext=m4a]/best[height<=${resolution}][ext=mp4]/best[height<=${resolution}]`
+    const ytProc = spawn(YTDLP, [
+      '-f', format,
+      '--no-playlist',
+      '--merge-output-format', 'mp4',
+      '-o', '-',
+      decoded
+    ])
+
+    ytProc.stdout.pipe(res)
+    ytProc.stderr.on('data', (d) => console.log('[yt-dlp mp4]', d.toString()))
+    ytProc.on('error', (e) => { console.error('[yt-dlp mp4]', e.message); if (!res.headersSent) res.destroy() })
+    res.on('close', () => ytProc.kill())
+  } catch (e) {
+    console.error('[mp4]', e.message)
+    if (!res.headersSent) res.status(502).json({ error: e.message || 'Failed to fetch video' })
+  }
+})
 async function fetchTranscript(videoId) {
   try {
     const pageRes = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {

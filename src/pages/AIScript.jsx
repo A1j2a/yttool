@@ -14,7 +14,11 @@ const TABS = [
 ]
 
 export default function AIScript() {
-  const [url, setUrl] = useState('')
+  const [url, setUrl] = useState(() => {
+    const saved = localStorage.getItem('yt_url')
+    if (saved) { localStorage.removeItem('yt_url'); return saved }
+    return ''
+  })
   const [status, setStatus] = useState('idle') // idle | loading | done | error
   const [data, setData] = useState(null)
   const [activeTab, setActiveTab] = useState('transcript')

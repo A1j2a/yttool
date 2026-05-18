@@ -1,5 +1,4 @@
-# Environment variables
-.env
+# Environment variables — commit .env for deployment, keep secrets out of .env.local
 .env.local
 .env.production
 .env.*.local

@@ -125,57 +125,34 @@ function AudioPlayer({ blobUrl }) {
   )
 }
 
-// ─── API calls (via proxy) ───────────────────────────────────────────────────
+// ─── API ──────────────────────────────────────────────────────────────────────
 const API = import.meta.env.VITE_API_URL
 
-async function startConversion(videoUrl) {
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    try {
-      const res = await fetch(`${API}/api/convert?url=${encodeURIComponent(videoUrl)}`, { signal: AbortSignal.timeout(30000) })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json()
-      console.log('[MP3] convert response:', data)
-      if (!data.id) throw new Error('Invalid response from converter')
-      return { id: data.id, title: data.title || 'Audio Track', thumb: data.info?.image || null }
-    } catch (e) {
-      console.warn(`[MP3] startConversion attempt ${attempt} failed:`, e.message)
-      if (attempt === 3) throw new Error('Failed to start conversion — server may be waking up, please try again')
-      await new Promise((r) => setTimeout(r, 5000))
-    }
+async function convertToMp3(videoUrl) {
+  const res = await fetch(`${API}/api/mp3?url=${encodeURIComponent(videoUrl)}`)
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.error || `Server error ${res.status}`)
   }
-}
-
-async function pollProgress(id) {
-  const MAX_RETRIES = 90
-  const DELAY_MS    = 4000
-  for (let i = 0; i < MAX_RETRIES; i++) {
-    await new Promise((r) => setTimeout(r, DELAY_MS))
-    try {
-      const res  = await fetch(`${API}/api/progress?id=${id}`)
-      if (!res.ok) { console.warn(`[MP3] progress HTTP ${res.status}, retry ${i + 1}`); continue }
-      const data = await res.json()
-      console.log(`[MP3] progress attempt ${i + 1}:`, data)
-      if (data.download_url) {
-        console.log('[MP3] download_url ready:', data.download_url)
-        return data.download_url
-      }
-    } catch (e) {
-      console.warn(`[MP3] progress fetch error attempt ${i + 1}:`, e.message)
-    }
-  }
-  throw new Error('Conversion timed out — please try again')
+  const title = decodeURIComponent(res.headers.get('X-Video-Title') || 'Audio Track')
+  const thumb = decodeURIComponent(res.headers.get('X-Video-Thumb') || '')
+  const blob = await res.blob()
+  return { blob, title, thumb }
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function MP3Converter() {
-  const [url, setUrl] = useState('')
+  const [url, setUrl] = useState(() => {
+    const saved = localStorage.getItem('yt_url')
+    if (saved) { localStorage.removeItem('yt_url'); return saved }
+    return ''
+  })
   const [quality, setQuality] = useState('192 kbps')
-  const [status, setStatus] = useState('idle')   // idle | loading | fetching | done | error
-  const [result, setResult] = useState(null)      // { blobUrl, downloadUrl, title, thumb, filename }
+  const [status, setStatus] = useState('idle')   // idle | loading | done | error
+  const [result, setResult] = useState(null)
   const { toasts, addToast, removeToast } = useToast()
   const blobRef = useRef(null)
 
-  // revoke blob URL on unmount to free memory
   useEffect(() => () => { if (blobRef.current) URL.revokeObjectURL(blobRef.current) }, [])
 
   const isYouTubeUrl = (u) => /^https?:\/\/(www\.)?(youtube\.com\/watch|youtu\.be\/)/.test(u)
@@ -185,26 +162,16 @@ export default function MP3Converter() {
     if (!trimmed) { addToast('Please enter a video URL', 'error'); return }
     if (!isYouTubeUrl(trimmed)) { addToast('Please enter a valid YouTube URL', 'error'); return }
 
-    // revoke previous blob
     if (blobRef.current) { URL.revokeObjectURL(blobRef.current); blobRef.current = null }
-
     setStatus('loading')
     setResult(null)
 
     try {
-      const { id, title, thumb } = await startConversion(trimmed)
-      const downloadUrl = await pollProgress(id)
-      const filename = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.mp3`
-
-      // fetch via proxy stream endpoint so blob works without CORS
-      setStatus('fetching')
-      const res = await fetch(`${API}/api/stream?url=${encodeURIComponent(downloadUrl)}`)
-      if (!res.ok) throw new Error('Failed to fetch audio')
-      const blob = await res.blob()
+      const { blob, title, thumb } = await convertToMp3(trimmed)
       const blobUrl = URL.createObjectURL(blob)
       blobRef.current = blobUrl
-
-      setResult({ blobUrl, downloadUrl, title, thumb, filename })
+      const filename = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.mp3`
+      setResult({ blobUrl, title, thumb, filename })
       setStatus('done')
     } catch (err) {
       setStatus('error')
@@ -286,22 +253,20 @@ export default function MP3Converter() {
             ))}
           </div>
 
-          <AnimatedButton onClick={handleConvert} disabled={status === 'loading' || status === 'fetching'} className="w-full">
+          <AnimatedButton onClick={handleConvert} disabled={status === 'loading'} className="w-full">
             <Music size={16} />
-            {status === 'loading' ? 'Converting...' : status === 'fetching' ? 'Preparing...' : 'Convert to MP3'}
+            {status === 'loading' ? 'Converting...' : 'Convert to MP3'}
           </AnimatedButton>
         </GlassCard>
 
         {/* Loading */}
-        {(status === 'loading' || status === 'fetching') && (
+        {status === 'loading' && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-2xl p-6 mb-6">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin flex-shrink-0" />
               <div>
-                <p className="text-white text-sm font-medium">
-                  {status === 'fetching' ? 'Preparing audio preview...' : 'Converting to MP3...'}
-                </p>
-                <p className="text-slate-500 text-xs mt-0.5">This may take a few seconds</p>
+                <p className="text-white text-sm font-medium">Converting to MP3...</p>
+                <p className="text-slate-500 text-xs mt-0.5">Downloading & converting, please wait</p>
               </div>
             </div>
           </motion.div>
@@ -319,7 +284,6 @@ export default function MP3Converter() {
               <span className="text-green-400 font-semibold">Conversion Complete!</span>
             </div>
 
-            {/* Track info */}
             <div className="flex items-center gap-4 mb-2">
               {thumbUrl ? (
                 <img src={thumbUrl} alt="thumbnail" className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
@@ -334,10 +298,8 @@ export default function MP3Converter() {
               </div>
             </div>
 
-            {/* Audio Player */}
             <AudioPlayer blobUrl={result.blobUrl} />
 
-            {/* Download */}
             <AnimatedButton className="w-full mt-4" onClick={handleDownload}>
               <Download size={16} />
               Download MP3
@@ -353,9 +315,7 @@ export default function MP3Converter() {
             className="glass rounded-2xl p-5 border border-red-500/20 text-center"
           >
             <p className="text-red-400 font-medium mb-1">Conversion failed</p>
-            <p className="text-slate-500 text-sm mb-4">
-              Server waking up or video unavailable. Please wait 30 seconds and try again.
-            </p>
+            <p className="text-slate-500 text-sm mb-4">Video unavailable or age-restricted. Try another video.</p>
             <button onClick={() => setStatus('idle')} className="text-cyan-400 text-sm hover:underline">
               Try again
             </button>
