@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://yttune.app/sitemap.xml
+Sitemap: https://yttune.vercel.app/sitemap.xml
