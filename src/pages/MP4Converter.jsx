@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Video,
@@ -10,13 +11,42 @@ import {
   Volume2,
   Maximize,
   RotateCcw,
+  Music,
+  X,
+  FileText,
+  Save,
 } from "lucide-react";
 import { PageWrapper } from "../animations";
 import AnimatedButton from "../components/AnimatedButton";
 import GlassCard from "../components/GlassCard";
 import { useToast } from "../hooks/useToast";
+import { useSEO } from "../hooks/useSEO";
 import Toast from "../components/Toast";
+import FAQAccordion from "../components/FAQAccordion";
 import { isValidVideoUrl, extractVideoId } from "../utils/urlValidator";
+
+const MP4_FAQS = [
+  {
+    q: "How can I download a YouTube video in MP4 format?",
+    a: "Paste the YouTube video link in the box above, choose your preferred video resolution (such as 1080p Full HD or 720p HD), and click 'Convert to MP4'. Once ready, click 'Download MP4' to save the video file directly to your device.",
+  },
+  {
+    q: "Can I download YouTube videos in 1080p with audio included?",
+    a: "Yes! YTTune automatically muxes high-definition video with AAC stereo audio so you get crystal-clear 1080p and 720p MP4 videos with full sound.",
+  },
+  {
+    q: "Does this YouTube MP4 downloader work on mobile devices?",
+    a: "Absolutely. Whether you use iPhone (Safari), iPad, or an Android phone (Chrome), you can download MP4 videos directly to your camera roll or downloads folder without installing apps.",
+  },
+  {
+    q: "Can I download YouTube Shorts as MP4 videos?",
+    a: "Yes, YouTube Shorts are fully supported. Simply copy the link from the Shorts share button and paste it here to download the MP4 video without watermarks.",
+  },
+  {
+    q: "Is YouTube video download safe and free on YTTune?",
+    a: "Yes, YTTune is 100% free and safe. No malware, no popups, no account registration, and no tracking cookies are involved.",
+  },
+];
 
 // ─── Resolution config ────────────────────────────────────────────────────────
 const RESOLUTIONS = [
@@ -206,7 +236,7 @@ function VideoPlayer({ src, title, thumb }) {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const API = import.meta.env.VITE_API_URL;
+const API = import.meta.env.VITE_API_URL || '';
 
 async function convertToMp4(url, resolution) {
   const res = await fetch(`${API}/api/mp4?url=${encodeURIComponent(url)}&resolution=${resolution}`)
@@ -223,16 +253,38 @@ async function convertToMp4(url, resolution) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function MP4Converter() {
-  const [url, setUrl] = useState(() => {
-    const saved = localStorage.getItem('yt_url')
-    if (saved) { localStorage.removeItem('yt_url'); return saved }
-    return ''
-  });
+  const [url, setUrl] = useState(() => localStorage.getItem('yt_url') || '');
   const [resolution, setResolution] = useState(RESOLUTIONS[2]); // 720p default
   const [status, setStatus] = useState("idle");
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState(null);
+  const [saved, setSaved] = useState(false);
   const { toasts, addToast, removeToast } = useToast();
+
+  useSEO({
+    title: 'YouTube Video Downloader - Download YouTube MP4 1080p, 720p HD | YTTune',
+    description: 'Free YouTube video downloader online. Download YouTube videos in MP4 (1080p Full HD, 720p, 480p) fast and free. Works on Android, iPhone, Windows, and Mac.',
+    keywords: 'youtube video download, youtube video mp3 mp4 download, youtube mp4 download, download youtube video, youtube video downloader, 1080p youtube video download, youtube shorts video download, youtube video downlod',
+    canonical: 'https://yttune.vercel.app/mp4',
+  });
+
+  const handleUrlChange = (val) => {
+    setUrl(val);
+    setStatus("idle");
+    setSaved(false);
+    if (val.trim()) {
+      localStorage.setItem("yt_url", val.trim());
+    } else {
+      localStorage.removeItem("yt_url");
+    }
+  };
+
+  const handleClearUrl = () => {
+    setUrl("");
+    setStatus("idle");
+    setSaved(false);
+    localStorage.removeItem("yt_url");
+  };
 
   const handleConvert = async () => {
     if (!url.trim() || !isValidVideoUrl(url.trim())) {
@@ -242,6 +294,7 @@ export default function MP4Converter() {
     setStatus("loading");
     setProgress(10);
     setResult(null);
+    setSaved(false);
 
     try {
       setProgress(30)
@@ -264,7 +317,8 @@ export default function MP4Converter() {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    addToast("Download started!", "success");
+    setSaved(true);
+    addToast("Saved to your device!", "success");
   };
 
   const videoId = extractVideoId(url);
@@ -281,23 +335,49 @@ export default function MP4Converter() {
 
   return (
     <PageWrapper>
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
+      <div className="max-w-3xl mx-auto px-3 sm:px-6 py-8 sm:py-16">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
+          className="text-center mb-8"
         >
           <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-4">
             <Video size={28} className="text-purple-400" />
           </div>
-          <h1 className="text-4xl font-black text-white mb-3">
+          <h1 className="text-3xl sm:text-4xl font-black text-white mb-3">
             Video to <span className="neon-text">MP4</span>
           </h1>
-          <p className="text-slate-500">
+          <p className="text-slate-500 text-sm sm:text-base">
             Download videos in HD quality — free, no watermark, no signup.
           </p>
         </motion.div>
+
+        {/* Format Switcher Tabs */}
+        <div className="flex items-center justify-center mb-6">
+          <div className="inline-flex p-1 sm:p-1.5 rounded-2xl glass bg-black/50 border border-white/10 shadow-xl gap-1 sm:gap-2 max-w-full overflow-x-auto no-scrollbar">
+            <Link
+              to="/mp3"
+              className="flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-6 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300"
+            >
+              <Music size={15} className="text-slate-400 flex-shrink-0" />
+              <span>MP3 Audio</span>
+            </Link>
+            <button
+              className="flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-6 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 text-white shadow-lg shadow-purple-500/40 ring-1 ring-purple-300/60"
+            >
+              <Video size={15} className="text-white flex-shrink-0" />
+              <span>MP4 Video</span>
+            </button>
+            <Link
+              to="/ai-script"
+              className="flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-6 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300"
+            >
+              <FileText size={15} className="text-slate-400 flex-shrink-0" />
+              <span>AI Script</span>
+            </Link>
+          </div>
+        </div>
 
         {/* Input Card */}
         <GlassCard hover={false} className="p-6 mb-6">
@@ -312,13 +392,20 @@ export default function MP4Converter() {
             <input
               type="url"
               value={url}
-              onChange={(e) => {
-                setUrl(e.target.value);
-                setStatus("idle");
-              }}
+              onChange={(e) => handleUrlChange(e.target.value)}
               placeholder="https://youtube.com/watch?v=..."
-              className="w-full pl-9 pr-4 py-3 rounded-xl glass border border-white/10 text-white placeholder-slate-600 text-sm bg-transparent"
+              className="w-full pl-9 pr-10 py-3 rounded-xl glass border border-white/10 text-white placeholder-slate-600 text-sm bg-transparent focus:outline-none"
             />
+            {url && (
+              <button
+                type="button"
+                onClick={handleClearUrl}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                title="Clear URL"
+              >
+                <X size={16} />
+              </button>
+            )}
           </div>
 
           {/* Thumbnail preview while typing */}
@@ -428,7 +515,7 @@ export default function MP4Converter() {
               <div className="flex items-center gap-3 mb-3">
                 <CheckCircle size={18} className="text-green-400" />
                 <span className="text-green-400 font-semibold text-sm">
-                  Ready to Download
+                  Ready to Save
                 </span>
                 <span className="ml-auto px-2 py-0.5 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-400 text-xs font-bold">
                   {resolution.label}
@@ -441,9 +528,25 @@ export default function MP4Converter() {
                 MP4 • {resolution.label}
               </p>
 
-              <AnimatedButton className="w-full" onClick={handleDownload}>
-                <Download size={16} />
-                Download MP4
+              <AnimatedButton
+                className={`w-full flex items-center justify-center gap-2 ${
+                  saved
+                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+                    : 'bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 text-white shadow-lg shadow-purple-500/30'
+                }`}
+                onClick={handleDownload}
+              >
+                {saved ? (
+                  <>
+                    <CheckCircle size={18} />
+                    Saved to Device
+                  </>
+                ) : (
+                  <>
+                    <Save size={18} />
+                    Save MP4 to Device
+                  </>
+                )}
               </AnimatedButton>
             </div>
           </motion.div>
@@ -468,6 +571,58 @@ export default function MP4Converter() {
             </button>
           </motion.div>
         )}
+
+        {/* Semantic SEO Content Section */}
+        <section className="mt-16 pt-12 border-t border-white/5 space-y-12">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
+              YouTube Video Download — Free MP4 Downloader in 1080p &amp; 720p HD
+            </h2>
+            <p className="text-slate-300 leading-relaxed mb-4 text-sm sm:text-base">
+              YTTune provides the easiest and fastest web application for <strong className="text-white">YouTube video download</strong>. Save your favorite YouTube tutorials, music clips, gaming streams, and vlogs directly as high-definition MP4 files. Choose between 1080p Full HD, 720p HD, and mobile-friendly 480p/360p video with crystal-clear synced sound.
+            </p>
+            <p className="text-slate-400 leading-relaxed text-sm">
+              Our cloud downloader bypasses speed throttles to deliver maximum download rates directly to your browser. You don't need to register, configure proxies, or install shady third-party plugins.
+            </p>
+          </div>
+
+          {/* Features Grid */}
+          <div className="grid sm:grid-cols-3 gap-4">
+            <div className="glass rounded-xl p-5 border border-white/10">
+              <h3 className="text-white font-bold mb-2">🎬 1080p Full HD Video</h3>
+              <p className="text-slate-400 text-xs leading-relaxed">Save videos in crisp 1080p FHD and 720p HD with synced audio.</p>
+            </div>
+            <div className="glass rounded-xl p-5 border border-white/10">
+              <h3 className="text-white font-bold mb-2">⚡ No Speed Limits</h3>
+              <p className="text-slate-400 text-xs leading-relaxed">Enjoy direct, unrestricted download speeds directly from our fast servers.</p>
+            </div>
+            <div className="glass rounded-xl p-5 border border-white/10">
+              <h3 className="text-white font-bold mb-2">📱 YouTube Shorts Ready</h3>
+              <p className="text-slate-400 text-xs leading-relaxed">Save YouTube Shorts in vertical MP4 format without annoying watermarks.</p>
+            </div>
+          </div>
+
+          {/* How to Guide */}
+          <div className="glass rounded-2xl p-6 sm:p-8 border border-white/10 space-y-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-white">
+              How to Download YouTube Videos in MP4 Online
+            </h2>
+            <ol className="list-decimal list-inside space-y-3 text-slate-300 text-sm">
+              <li><strong className="text-white">Copy Video Link:</strong> Navigate to YouTube and copy the link from the address bar or share sheet.</li>
+              <li><strong className="text-white">Paste URL:</strong> Paste the link into YTTune's input bar above.</li>
+              <li><strong className="text-white">Select Resolution:</strong> Pick 1080p FHD, 720p HD, or 480p depending on your storage needs.</li>
+              <li><strong className="text-white">Download Video:</strong> Click &quot;Convert to MP4&quot; and save the resulting MP4 video directly to your device.</li>
+            </ol>
+          </div>
+
+          {/* MP4 FAQs */}
+          <div className="space-y-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-white">
+              YouTube Video Download — FAQs
+            </h2>
+            <FAQAccordion faqs={MP4_FAQS} />
+          </div>
+        </section>
       </div>
       <Toast toasts={toasts} removeToast={removeToast} />
     </PageWrapper>

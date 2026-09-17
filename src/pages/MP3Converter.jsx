@@ -1,12 +1,15 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Music, Download, CheckCircle, Link as LinkIcon, Play, Pause, Volume2, RotateCcw } from 'lucide-react'
+import { Music, Download, CheckCircle, Link as LinkIcon, Play, Pause, Volume2, RotateCcw, Video, X, FileText, Save } from 'lucide-react'
 import { PageWrapper } from '../animations'
 import AnimatedButton from '../components/AnimatedButton'
 import GlassCard from '../components/GlassCard'
 import { AUDIO_QUALITIES } from '../constants'
 import { useToast } from '../hooks/useToast'
+import { useSEO } from '../hooks/useSEO'
 import Toast from '../components/Toast'
+import FAQAccordion from '../components/FAQAccordion'
 import { extractVideoId } from '../utils/urlValidator'
 
 // ─── Audio Player ─────────────────────────────────────────────────────────────
@@ -126,7 +129,30 @@ function AudioPlayer({ blobUrl }) {
 }
 
 // ─── API ──────────────────────────────────────────────────────────────────────
-const API = import.meta.env.VITE_API_URL
+const API = import.meta.env.VITE_API_URL || ''
+
+const MP3_FAQS = [
+  {
+    q: 'How do I download a YouTube video as an MP3 file?',
+    a: 'Copy the URL of the YouTube video, paste it into the converter box above, choose your desired quality (up to 320 kbps), and click "Convert to MP3". When ready, click "Download MP3" to save it directly to your device.',
+  },
+  {
+    q: 'What is the highest audio quality supported for YouTube MP3 download?',
+    a: 'YTTune supports converting YouTube videos into MP3 audio up to 320 kbps (studio quality), along with 256 kbps, 192 kbps, and 128 kbps.',
+  },
+  {
+    q: 'Can I download YouTube MP3 on mobile (Android and iPhone)?',
+    a: 'Yes! YTTune works natively on mobile Safari, Chrome, Samsung Internet, and Firefox. You can download YouTube MP3 audio directly to your mobile phone storage.',
+  },
+  {
+    q: 'Can I convert YouTube Shorts to MP3 audio?',
+    a: 'Yes, our converter fully supports YouTube Shorts links. Simply copy the Shorts link and paste it here to extract the audio track.',
+  },
+  {
+    q: 'Is this YouTube to MP3 converter free?',
+    a: 'Yes, 100% free with unlimited conversions. No account signup, subscription, or software installation is required.',
+  },
+]
 
 async function convertToMp3(videoUrl) {
   const res = await fetch(`${API}/api/mp3?url=${encodeURIComponent(videoUrl)}`)
@@ -142,20 +168,42 @@ async function convertToMp3(videoUrl) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function MP3Converter() {
-  const [url, setUrl] = useState(() => {
-    const saved = localStorage.getItem('yt_url')
-    if (saved) { localStorage.removeItem('yt_url'); return saved }
-    return ''
-  })
+  const [url, setUrl] = useState(() => localStorage.getItem('yt_url') || '')
   const [quality, setQuality] = useState('192 kbps')
   const [status, setStatus] = useState('idle')   // idle | loading | done | error
   const [result, setResult] = useState(null)
+  const [saved, setSaved] = useState(false)
   const { toasts, addToast, removeToast } = useToast()
   const blobRef = useRef(null)
+
+  useSEO({
+    title: 'YouTube to MP3 Converter - Free YouTube Video MP3 Download | YTTune',
+    description: 'Convert YouTube videos to high quality MP3 audio (320kbps, 256kbps, 192kbps). Free, instant, and unlimited online YouTube MP3 downloader for all devices.',
+    keywords: 'youtube video mp3 mp4 download, youtube to mp3, youtube video download, youtube mp3 converter, convert youtube to mp3, free youtube mp3 downloader, download youtube audio',
+    canonical: 'https://yttune.vercel.app/mp3',
+  })
 
   useEffect(() => () => { if (blobRef.current) URL.revokeObjectURL(blobRef.current) }, [])
 
   const isYouTubeUrl = (u) => /^https?:\/\/(www\.)?(youtube\.com\/watch|youtu\.be\/)/.test(u)
+
+  const handleUrlChange = (val) => {
+    setUrl(val)
+    setStatus('idle')
+    setSaved(false)
+    if (val.trim()) {
+      localStorage.setItem('yt_url', val.trim())
+    } else {
+      localStorage.removeItem('yt_url')
+    }
+  }
+
+  const handleClearUrl = () => {
+    setUrl('')
+    setStatus('idle')
+    setSaved(false)
+    localStorage.removeItem('yt_url')
+  }
 
   const handleConvert = useCallback(async () => {
     const trimmed = url.trim()
@@ -165,6 +213,7 @@ export default function MP3Converter() {
     if (blobRef.current) { URL.revokeObjectURL(blobRef.current); blobRef.current = null }
     setStatus('loading')
     setResult(null)
+    setSaved(false)
 
     try {
       const { blob, title, thumb } = await convertToMp3(trimmed)
@@ -187,7 +236,8 @@ export default function MP3Converter() {
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
-    addToast('Download started!', 'success')
+    setSaved(true)
+    addToast('Saved to your device!', 'success')
   }
 
   const videoId = extractVideoId(url)
@@ -195,18 +245,44 @@ export default function MP3Converter() {
 
   return (
     <PageWrapper>
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
+      <div className="max-w-3xl mx-auto px-3 sm:px-6 py-8 sm:py-16">
 
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto mb-4">
             <Music size={28} className="text-cyan-400" />
           </div>
-          <h1 className="text-4xl font-black text-white mb-3">
+          <h1 className="text-3xl sm:text-4xl font-black text-white mb-3">
             Video to <span className="neon-text">MP3</span>
           </h1>
-          <p className="text-slate-500">Extract high-quality audio from any YouTube video — 100% free, no signup.</p>
+          <p className="text-slate-500 text-sm sm:text-base">Extract high-quality audio from any YouTube video — 100% free, no signup.</p>
         </motion.div>
+
+        {/* Format Switcher Tabs */}
+        <div className="flex items-center justify-center mb-6">
+          <div className="inline-flex p-1 sm:p-1.5 rounded-2xl glass bg-black/50 border border-white/10 shadow-xl gap-1 sm:gap-2 max-w-full overflow-x-auto no-scrollbar">
+            <button
+              className="flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-6 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/40 ring-1 ring-cyan-300/60"
+            >
+              <Music size={15} className="text-white flex-shrink-0" />
+              <span>MP3 Audio</span>
+            </button>
+            <Link
+              to="/mp4"
+              className="flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-6 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300"
+            >
+              <Video size={15} className="text-slate-400 flex-shrink-0" />
+              <span>MP4 Video</span>
+            </Link>
+            <Link
+              to="/ai-script"
+              className="flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-6 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300"
+            >
+              <FileText size={15} className="text-slate-400 flex-shrink-0" />
+              <span>AI Script</span>
+            </Link>
+          </div>
+        </div>
 
         {/* Input Card */}
         <GlassCard hover={false} className="p-6 mb-6">
@@ -216,10 +292,20 @@ export default function MP3Converter() {
             <input
               type="url"
               value={url}
-              onChange={(e) => { setUrl(e.target.value); setStatus('idle') }}
+              onChange={(e) => handleUrlChange(e.target.value)}
               placeholder="https://youtube.com/watch?v=..."
-              className="w-full pl-9 pr-4 py-3 rounded-xl glass border border-white/10 text-white placeholder-slate-600 text-sm bg-transparent"
+              className="w-full pl-9 pr-10 py-3 rounded-xl glass border border-white/10 text-white placeholder-slate-600 text-sm bg-transparent focus:outline-none"
             />
+            {url && (
+              <button
+                type="button"
+                onClick={handleClearUrl}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                title="Clear URL"
+              >
+                <X size={16} />
+              </button>
+            )}
           </div>
 
           {/* Thumbnail preview */}
@@ -281,7 +367,7 @@ export default function MP3Converter() {
           >
             <div className="flex items-center gap-3 mb-4">
               <CheckCircle size={20} className="text-green-400" />
-              <span className="text-green-400 font-semibold">Conversion Complete!</span>
+              <span className="text-green-400 font-semibold">Ready to Save</span>
             </div>
 
             <div className="flex items-center gap-4 mb-2">
@@ -300,9 +386,25 @@ export default function MP3Converter() {
 
             <AudioPlayer blobUrl={result.blobUrl} />
 
-            <AnimatedButton className="w-full mt-4" onClick={handleDownload}>
-              <Download size={16} />
-              Download MP3
+            <AnimatedButton
+              className={`w-full mt-4 flex items-center justify-center gap-2 ${
+                saved
+                  ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+                  : 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/30'
+              }`}
+              onClick={handleDownload}
+            >
+              {saved ? (
+                <>
+                  <CheckCircle size={18} />
+                  Saved to Device
+                </>
+              ) : (
+                <>
+                  <Save size={18} />
+                  Save MP3 to Device
+                </>
+              )}
             </AnimatedButton>
           </motion.div>
         )}
@@ -321,6 +423,58 @@ export default function MP3Converter() {
             </button>
           </motion.div>
         )}
+
+        {/* Semantic SEO Content Section */}
+        <section className="mt-16 pt-12 border-t border-white/5 space-y-12">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
+              YouTube Video MP3 Download — High Quality 320kbps Audio Converter
+            </h2>
+            <p className="text-slate-300 leading-relaxed mb-4 text-sm sm:text-base">
+              YTTune provides the fastest and most reliable online tool for <strong className="text-white">YouTube video MP3 download</strong>. Extract crystal-clear music, podcast episodes, lectures, audiobooks, and background tracks from YouTube videos in pure MP3 format. With support for bitrates up to 320kbps, enjoy true studio quality sound without loss of fidelity.
+            </p>
+            <p className="text-slate-400 leading-relaxed text-sm">
+              Our free cloud converter handles everything on fast dedicated servers. There are no software downloads required, no annoying browser extensions to install, and zero restrictions on video length.
+            </p>
+          </div>
+
+          {/* Features Grid */}
+          <div className="grid sm:grid-cols-3 gap-4">
+            <div className="glass rounded-xl p-5 border border-white/10">
+              <h3 className="text-white font-bold mb-2">⚡ Ultra-Fast Conversion</h3>
+              <p className="text-slate-400 text-xs leading-relaxed">High-speed cloud processing converts YouTube videos to MP3 in mere seconds.</p>
+            </div>
+            <div className="glass rounded-xl p-5 border border-white/10">
+              <h3 className="text-white font-bold mb-2">🎧 Up to 320 kbps HD Audio</h3>
+              <p className="text-slate-400 text-xs leading-relaxed">Choose from 128kbps, 192kbps, 256kbps, and maximum fidelity 320kbps MP3.</p>
+            </div>
+            <div className="glass rounded-xl p-5 border border-white/10">
+              <h3 className="text-white font-bold mb-2">📱 All Devices Supported</h3>
+              <p className="text-slate-400 text-xs leading-relaxed">Seamlessly download on iPhone, Android, Mac, Windows, Linux, and tablets.</p>
+            </div>
+          </div>
+
+          {/* How to Guide */}
+          <div className="glass rounded-2xl p-6 sm:p-8 border border-white/10 space-y-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-white">
+              How to Download YouTube Videos to MP3 Online
+            </h2>
+            <ol className="list-decimal list-inside space-y-3 text-slate-300 text-sm">
+              <li><strong className="text-white">Copy Link:</strong> Go to YouTube and copy the URL of the video you want to convert.</li>
+              <li><strong className="text-white">Paste URL:</strong> Paste the URL into the input field above.</li>
+              <li><strong className="text-white">Select Bitrate:</strong> Choose your preferred audio quality (192 kbps or 320 kbps).</li>
+              <li><strong className="text-white">Convert & Save:</strong> Click &quot;Convert to MP3&quot;, preview the audio, and click &quot;Download MP3&quot;.</li>
+            </ol>
+          </div>
+
+          {/* MP3 FAQs */}
+          <div className="space-y-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-white">
+              YouTube Video MP3 Download — FAQs
+            </h2>
+            <FAQAccordion faqs={MP3_FAQS} />
+          </div>
+        </section>
 
       </div>
       <Toast toasts={toasts} removeToast={removeToast} />

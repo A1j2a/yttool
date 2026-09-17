@@ -15,6 +15,7 @@
     "@distube/ytdl-core": "^4.16.12",
     "@emailjs/browser": "^4.4.1",
     "@tailwindcss/vite": "^4.3.0",
+    "@vercel/analytics": "^2.0.1",
     "cors": "^2.8.6",
     "express": "^4.22.2",
     "express-rate-limit": "^8.5.2",

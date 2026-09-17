@@ -5,10 +5,41 @@ import rateLimit from 'express-rate-limit'
 import { createRequire } from 'module'
 import { spawn } from 'child_process'
 
+import fs from 'fs'
+import path from 'path'
+import os from 'os'
+import { execSync } from 'child_process'
+
 const require = createRequire(import.meta.url)
 const ffmpegStatic = require('ffmpeg-static')
 const FFMPEG = ffmpegStatic || '/opt/homebrew/bin/ffmpeg'
-const YTDLP  = process.env.YTDLP_PATH || '/opt/homebrew/bin/yt-dlp'
+
+// Auto-detect yt-dlp binary across common locations
+function resolveYtDlp() {
+  if (process.env.YTDLP_PATH && fs.existsSync(process.env.YTDLP_PATH)) {
+    return process.env.YTDLP_PATH
+  }
+  const candidates = [
+    '/Users/dd-mac-04/Library/Python/3.9/bin/yt-dlp',
+    '/opt/homebrew/bin/yt-dlp',
+    '/usr/local/bin/yt-dlp',
+    '/usr/bin/yt-dlp',
+    path.join(process.cwd(), 'yt-dlp'),
+    path.join(process.env.HOME || '', 'Library/Python/3.9/bin/yt-dlp'),
+  ]
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c
+  }
+  try {
+    const p = execSync('which yt-dlp', { encoding: 'utf8' }).trim()
+    if (p && fs.existsSync(p)) return p
+  } catch { /* ignore */ }
+  return 'yt-dlp'
+}
+
+const YTDLP = resolveYtDlp()
+console.log(`[Init] Using YTDLP at: ${YTDLP}`)
+console.log(`[Init] Using FFMPEG at: ${FFMPEG}`)
 
 const app  = express()
 const PORT = process.env.PORT || 3001
@@ -28,12 +59,13 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }))
 app.use(cors({
   origin: isProd ? ALLOWED_ORIGINS : '*',
   methods: ['GET'],
+  exposedHeaders: ['X-Video-Title', 'X-Video-Thumb', 'Content-Disposition', 'Content-Length'],
 }))
 
 // ── Rate limiting ─────────────────────────────────────────────────────────────
 const limiter = rateLimit({
   windowMs: 60 * 1000,   // 1 minute
-  max: 30,               // 30 requests/min per IP
+  max: 60,               // 60 requests/min per IP
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later.' },
@@ -44,101 +76,189 @@ app.use('/api', limiter)
 const isValidYouTubeUrl = (url) =>
   /^https?:\/\/(www\.)?(youtube\.com\/watch\?.*v=[\w-]{11}|youtu\.be\/[\w-]{11}|youtube\.com\/shorts\/[\w-]{11})/.test(url)
 
-// ── shared: get video info fast ──────────────────────────────────────────────
-function getVideoInfo(url) {
+// ── shared: get video info fast (oEmbed first ~50ms, yt-dlp fallback) ─────────
+async function getVideoInfo(url) {
+  // 1. Try YouTube oEmbed API for instant title & thumbnail (<100ms)
+  try {
+    const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`
+    const res = await fetch(oembedUrl, { signal: AbortSignal.timeout(3000) })
+    if (res.ok) {
+      const data = await res.json()
+      if (data?.title) {
+        return {
+          title: data.title,
+          thumb: data.thumbnail_url || ''
+        }
+      }
+    }
+  } catch {
+    // fallback to yt-dlp below
+  }
+
+  // 2. Fallback to yt-dlp with timeout
   return new Promise((resolve, reject) => {
     const proc = spawn(YTDLP, ['--print', '%(title)s\n%(thumbnail)s', '--no-playlist', url])
     let out = ''
+    let errOut = ''
+    const timer = setTimeout(() => {
+      proc.kill()
+      reject(new Error('yt-dlp info timed out'))
+    }, 12000)
+
     proc.stdout.on('data', (d) => out += d)
+    proc.stderr.on('data', (d) => errOut += d)
+    proc.on('error', (err) => {
+      clearTimeout(timer)
+      reject(err)
+    })
     proc.on('close', (code) => {
-      if (code !== 0) return reject(new Error('yt-dlp info failed'))
+      clearTimeout(timer)
+      if (code !== 0) return reject(new Error(errOut.trim() || 'yt-dlp info failed'))
       const [title = 'Track', thumb = ''] = out.trim().split('\n')
       resolve({ title, thumb })
     })
   })
 }
 
-// ── MP3: yt-dlp → ffmpeg → stream ────────────────────────────────────────────
+// ── MP3: yt-dlp → mp3 conversion with verified file output ───────────────────
 app.get('/api/mp3', async (req, res) => {
   const { url } = req.query
   if (!url) return res.status(400).json({ error: 'url required' })
   const decoded = decodeURIComponent(url)
   if (!isValidYouTubeUrl(decoded)) return res.status(400).json({ error: 'Invalid YouTube URL' })
 
+  const tmpId = `${Date.now()}_${Math.random().toString(36).slice(2)}`
+  const tmpFile = path.join(os.tmpdir(), `yttune_${tmpId}.mp3`)
+
   try {
     const { title, thumb } = await getVideoInfo(decoded)
-    const safeTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase()
+    const safeTitle = (title || 'audio').replace(/[^a-z0-9]/gi, '_').toLowerCase()
 
+    await new Promise((resolve, reject) => {
+      const ytProc = spawn(YTDLP, [
+        '--ffmpeg-location', FFMPEG,
+        '--extractor-args', 'youtube:player_client=ios,android,web',
+        '-x',
+        '--audio-format', 'mp3',
+        '--audio-quality', '0',
+        '--no-playlist',
+        '-o', tmpFile,
+        '--',
+        decoded
+      ])
+
+      let errBuf = ''
+      const timer = setTimeout(() => {
+        ytProc.kill('SIGKILL')
+        reject(new Error('Conversion timed out'))
+      }, 120000) // 2 min max
+
+      ytProc.stderr.on('data', (d) => errBuf += d)
+      ytProc.on('error', (err) => {
+        clearTimeout(timer)
+        reject(err)
+      })
+      ytProc.on('close', (code) => {
+        clearTimeout(timer)
+        if (code === 0 && fs.existsSync(tmpFile) && fs.statSync(tmpFile).size > 1000) {
+          resolve()
+        } else {
+          reject(new Error(errBuf.slice(-300) || 'Audio extraction failed'))
+        }
+      })
+    })
+
+    const stat = fs.statSync(tmpFile)
     res.setHeader('Content-Type', 'audio/mpeg')
+    res.setHeader('Content-Length', stat.size)
     res.setHeader('Content-Disposition', `attachment; filename="${safeTitle}.mp3"`)
     res.setHeader('X-Video-Title', encodeURIComponent(title))
     res.setHeader('X-Video-Thumb', encodeURIComponent(thumb))
     res.setHeader('Cache-Control', 'no-store')
 
-    // Stream audio via yt-dlp | ffmpeg
-    const ytProc = spawn(YTDLP, [
-      '-f', 'bestaudio',
-      '--no-playlist',
-      '-o', '-',
-      decoded
-    ])
-
-    const ffProc = spawn(FFMPEG, [
-      '-i', 'pipe:0',
-      '-vn',
-      '-ab', '128k',
-      '-f', 'mp3',
-      'pipe:1'
-    ])
-
-    ytProc.stdout.pipe(ffProc.stdin)
-    ffProc.stdout.pipe(res)
-
-    ytProc.on('error', (e) => { console.error('[yt-dlp]', e.message); res.destroy() })
-    ffProc.on('error', (e) => { console.error('[ffmpeg]', e.message); res.destroy() })
-    ffProc.stderr.on('data', (d) => console.log('[ffmpeg]', d.toString()))
-    ytProc.stderr.on('data', (d) => console.log('[yt-dlp]', d.toString()))
-
-    res.on('close', () => { ytProc.kill(); ffProc.kill() })
+    const stream = fs.createReadStream(tmpFile)
+    stream.pipe(res)
+    stream.on('end', () => fs.unlink(tmpFile, () => {}))
+    stream.on('error', () => fs.unlink(tmpFile, () => {}))
+    res.on('close', () => fs.unlink(tmpFile, () => {}))
   } catch (e) {
     console.error('[mp3]', e.message)
-    if (!res.headersSent) res.status(502).json({ error: e.message || 'Failed to fetch video' })
+    if (fs.existsSync(tmpFile)) fs.unlink(tmpFile, () => {})
+    if (!res.headersSent) res.status(502).json({ error: e.message || 'Failed to convert audio' })
   }
 })
 
-// ── MP4: yt-dlp → stream ──────────────────────────────────────────────────────
+// ── MP4: yt-dlp → mp4 with verified video & audio file output ────────────────
+const ALLOWED_RESOLUTIONS = ['360', '480', '720', '1080', '2160']
+
 app.get('/api/mp4', async (req, res) => {
   const { url, resolution = '720' } = req.query
   if (!url) return res.status(400).json({ error: 'url required' })
   const decoded = decodeURIComponent(url)
   if (!isValidYouTubeUrl(decoded)) return res.status(400).json({ error: 'Invalid YouTube URL' })
 
+  // Security: strictly whitelist resolution to prevent format injection
+  const safeRes = ALLOWED_RESOLUTIONS.includes(String(resolution)) ? String(resolution) : '720'
+
+  const tmpId = `${Date.now()}_${Math.random().toString(36).slice(2)}`
+  const tmpFile = path.join(os.tmpdir(), `yttune_${tmpId}.mp4`)
+
   try {
     const { title, thumb } = await getVideoInfo(decoded)
-    const safeTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase()
+    const safeTitle = (title || 'video').replace(/[^a-z0-9]/gi, '_').toLowerCase()
 
+    const format = `best[height<=${safeRes}][ext=mp4]/bestvideo[height<=${safeRes}][ext=mp4]+bestaudio[ext=m4a]/best[height<=${safeRes}]/best`
+
+    await new Promise((resolve, reject) => {
+      const ytProc = spawn(YTDLP, [
+        '--ffmpeg-location', FFMPEG,
+        '--extractor-args', 'youtube:player_client=ios,android,web',
+        '-f', format,
+        '--no-playlist',
+        '--merge-output-format', 'mp4',
+        '-o', tmpFile,
+        '--',
+        decoded
+      ])
+
+      let errBuf = ''
+      const timer = setTimeout(() => {
+        ytProc.kill('SIGKILL')
+        reject(new Error('Download timed out'))
+      }, 180000) // 3 min max
+
+      ytProc.stderr.on('data', (d) => errBuf += d)
+      ytProc.on('error', (err) => {
+        clearTimeout(timer)
+        reject(err)
+      })
+      ytProc.on('close', (code) => {
+        clearTimeout(timer)
+        if (code === 0 && fs.existsSync(tmpFile) && fs.statSync(tmpFile).size > 1000) {
+          resolve()
+        } else {
+          reject(new Error(errBuf.slice(-300) || 'Video extraction failed'))
+        }
+      })
+    })
+
+    const stat = fs.statSync(tmpFile)
     res.setHeader('Content-Type', 'video/mp4')
+    res.setHeader('Content-Length', stat.size)
     res.setHeader('Content-Disposition', `attachment; filename="${safeTitle}.mp4"`)
     res.setHeader('X-Video-Title', encodeURIComponent(title))
     res.setHeader('X-Video-Thumb', encodeURIComponent(thumb))
     res.setHeader('Cache-Control', 'no-store')
 
-    const format = `bestvideo[height<=${resolution}][ext=mp4]+bestaudio[ext=m4a]/best[height<=${resolution}][ext=mp4]/best[height<=${resolution}]`
-    const ytProc = spawn(YTDLP, [
-      '-f', format,
-      '--no-playlist',
-      '--merge-output-format', 'mp4',
-      '-o', '-',
-      decoded
-    ])
-
-    ytProc.stdout.pipe(res)
-    ytProc.stderr.on('data', (d) => console.log('[yt-dlp mp4]', d.toString()))
-    ytProc.on('error', (e) => { console.error('[yt-dlp mp4]', e.message); if (!res.headersSent) res.destroy() })
-    res.on('close', () => ytProc.kill())
+    const stream = fs.createReadStream(tmpFile)
+    stream.pipe(res)
+    stream.on('end', () => fs.unlink(tmpFile, () => {}))
+    stream.on('error', () => fs.unlink(tmpFile, () => {}))
+    res.on('close', () => fs.unlink(tmpFile, () => {}))
   } catch (e) {
     console.error('[mp4]', e.message)
-    if (!res.headersSent) res.status(502).json({ error: e.message || 'Failed to fetch video' })
+    if (fs.existsSync(tmpFile)) fs.unlink(tmpFile, () => {})
+    if (!res.headersSent) res.status(502).json({ error: e.message || 'Failed to download video' })
   }
 })
 async function fetchTranscript(videoId) {
