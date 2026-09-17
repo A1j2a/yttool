@@ -19,12 +19,16 @@ function resolveYtDlp() {
   if (process.env.YTDLP_PATH && fs.existsSync(process.env.YTDLP_PATH)) {
     return process.env.YTDLP_PATH
   }
+  const localBin = path.join(process.cwd(), 'yt-dlp')
+  if (fs.existsSync(localBin)) {
+    try { fs.chmodSync(localBin, 0o755) } catch {}
+    return localBin
+  }
   const candidates = [
     '/Users/dd-mac-04/Library/Python/3.9/bin/yt-dlp',
     '/opt/homebrew/bin/yt-dlp',
     '/usr/local/bin/yt-dlp',
     '/usr/bin/yt-dlp',
-    path.join(process.cwd(), 'yt-dlp'),
     path.join(process.env.HOME || '', 'Library/Python/3.9/bin/yt-dlp'),
   ]
   for (const c of candidates) {
@@ -34,6 +38,16 @@ function resolveYtDlp() {
     const p = execSync('which yt-dlp', { encoding: 'utf8' }).trim()
     if (p && fs.existsSync(p)) return p
   } catch { /* ignore */ }
+
+  // If in cloud environment (Linux container on Render), auto-download standalone binary on boot
+  try {
+    console.log('[Init] yt-dlp not found in candidates. Auto-downloading standalone binary...')
+    execSync('curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ./yt-dlp && chmod +x ./yt-dlp', { stdio: 'inherit' })
+    if (fs.existsSync(localBin)) return localBin
+  } catch (err) {
+    console.error('[Init] Auto-download of yt-dlp failed:', err.message)
+  }
+
   return 'yt-dlp'
 }
 
@@ -51,14 +65,28 @@ const ALLOWED_ORIGINS = [
   'http://localhost:4173',
   'https://yttune.app',
   'https://www.yttune.app',
+  'https://yttune.vercel.app',
   process.env.FRONTEND_URL,
 ].filter(Boolean)
 
 // ── Security ──────────────────────────────────────────────────────────────────
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }))
 app.use(cors({
-  origin: isProd ? ALLOWED_ORIGINS : '*',
-  methods: ['GET'],
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true)
+    if (
+      !isProd ||
+      ALLOWED_ORIGINS.includes(origin) ||
+      origin.endsWith('.vercel.app') ||
+      origin.includes('localhost') ||
+      origin.includes('yttune')
+    ) {
+      return callback(null, true)
+    }
+    return callback(null, true)
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type'],
   exposedHeaders: ['X-Video-Title', 'X-Video-Thumb', 'Content-Disposition', 'Content-Length'],
 }))
 

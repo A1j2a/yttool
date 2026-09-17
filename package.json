@@ -9,6 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "NODE_ENV=production node server.js",
+    "postinstall": "if [ ! -f ./yt-dlp ]; then curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ./yt-dlp && chmod +x ./yt-dlp; fi",
     "lint": "eslint ."
   },
   "dependencies": {
