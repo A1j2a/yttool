@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app'
+import { initializeApp, getApps } from 'firebase/app'
 import { getAnalytics, logEvent } from 'firebase/analytics'
 
 const firebaseConfig = {
@@ -11,6 +11,19 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 }
 
-const app = initializeApp(firebaseConfig)
-export const analytics = getAnalytics(app)
-export { logEvent }
+let app = null
+let analytics = null
+
+if (firebaseConfig.apiKey) {
+  try {
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+    if (typeof window !== 'undefined') {
+      analytics = getAnalytics(app)
+    }
+  } catch (e) {
+    console.warn('Firebase analytics initialization skipped:', e?.message || e)
+  }
+}
+
+export { app, analytics, logEvent }
+
