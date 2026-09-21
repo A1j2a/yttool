@@ -8,6 +8,7 @@ export function useSEO({
   ogTitle,
   ogDescription,
   ogImage,
+  schema,
 }) {
   useEffect(() => {
     // Title
@@ -57,5 +58,24 @@ export function useSEO({
       }
       el.setAttribute('href', canonical)
     }
-  }, [title, description, keywords, canonical, ogTitle, ogDescription, ogImage])
+
+    // Dynamic JSON-LD Schema
+    let scriptEl = document.querySelector('#page-ldjson')
+    if (schema) {
+      if (!scriptEl) {
+        scriptEl = document.createElement('script')
+        scriptEl.id = 'page-ldjson'
+        scriptEl.type = 'application/ld+json'
+        document.head.appendChild(scriptEl)
+      }
+      scriptEl.textContent = JSON.stringify(schema)
+    } else if (scriptEl) {
+      scriptEl.remove()
+    }
+
+    return () => {
+      const el = document.querySelector('#page-ldjson')
+      if (el) el.remove()
+    }
+  }, [title, description, keywords, canonical, ogTitle, ogDescription, ogImage, schema])
 }

@@ -42,6 +42,38 @@ export default function Landing() {
     description: 'Free online YouTube video downloader and MP3 converter. Download YouTube videos in MP4 (1080p, 720p HD) and convert YouTube to MP3 audio 320kbps fast with no software or signup.',
     keywords: 'youtube video mp3 mp4 download, youtube video download, youtube video downlod, youtube downloader, youtube to mp3, youtube to mp4, download youtube video, youtube video download mp3, youtube video download mp4, yt mp3 converter',
     canonical: 'https://yttune.vercel.app/',
+    schema: {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'WebSite',
+          name: 'YTTune',
+          url: 'https://yttune.vercel.app/',
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: 'https://yttune.vercel.app/mp4?url={search_term_string}',
+            'query-input': 'required name=search_term_string',
+          },
+        },
+        {
+          '@type': 'WebApplication',
+          name: 'YTTune YouTube Downloader Suite',
+          url: 'https://yttune.vercel.app/',
+          description: 'Free online YouTube downloader and converter suite for MP4, MP3, Shorts, and HD Thumbnails.',
+          applicationCategory: 'MultimediaApplication',
+          operatingSystem: 'All',
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+        },
+        {
+          '@type': 'FAQPage',
+          mainEntity: FAQS.map((f) => ({
+            '@type': 'Question',
+            name: f.q,
+            acceptedAnswer: { '@type': 'Answer', text: f.a },
+          })),
+        },
+      ],
+    },
   })
 
   return (

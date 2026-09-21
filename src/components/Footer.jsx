@@ -34,23 +34,36 @@ export default function Footer() {
 
           {/* Tools */}
           <div>
-            <h4 className="text-white font-semibold mb-4">Tools</h4>
+            <h4 className="text-white font-semibold mb-4">Tools & Converters</h4>
             <ul className="space-y-2">
-              {[['YouTube to MP3', '/mp3'], ['YouTube to MP4', '/mp4'], ['AI Script', '/ai-script'], ['All Tools', '/tools']].map(([label, path]) => (
+              {[
+                ['YouTube to MP3', '/mp3'],
+                ['YouTube to MP4', '/mp4'],
+                ['Shorts Downloader', '/shorts'],
+                ['Thumbnail Grabber', '/thumbnail'],
+                ['AI Script Extractor', '/ai-script'],
+                ['All Tools', '/tools'],
+              ].map(([label, path]) => (
                 <li key={path}>
-                  <Link to={path} className="text-slate-500 hover:text-cyan-400 text-sm transition-colors">{label}</Link>
+                  <Link to={path} className="text-slate-400 hover:text-cyan-400 text-sm transition-colors">{label}</Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Company */}
+          {/* Company & Guides */}
           <div>
-            <h4 className="text-white font-semibold mb-4">Company</h4>
+            <h4 className="text-white font-semibold mb-4">Guides & Company</h4>
             <ul className="space-y-2">
-              {[['About', '/about'], ['Contact', '/contact'], ['YouTube to MP3 Guide', '/blog/youtube-to-mp3'], ['Best YT Downloader', '/blog/best-youtube-downloader']].map(([label, path]) => (
+              {[
+                ['About YTTune', '/about'],
+                ['Contact Us', '/contact'],
+                ['YouTube to MP3 Guide', '/blog/youtube-to-mp3'],
+                ['Download Shorts Guide', '/blog/download-youtube-shorts'],
+                ['Best YouTube Downloader', '/blog/best-youtube-downloader'],
+              ].map(([label, path]) => (
                 <li key={path}>
-                  <Link to={path} className="text-slate-500 hover:text-cyan-400 text-sm transition-colors">{label}</Link>
+                  <Link to={path} className="text-slate-400 hover:text-cyan-400 text-sm transition-colors">{label}</Link>
                 </li>
               ))}
             </ul>

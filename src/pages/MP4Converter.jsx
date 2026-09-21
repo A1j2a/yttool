@@ -267,11 +267,42 @@ export default function MP4Converter() {
   const [saved, setSaved] = useState(false);
   const { toasts, addToast, removeToast } = useToast();
 
+  const canonicalUrl = 'https://yttune.vercel.app/mp4';
+
   useSEO({
     title: 'YouTube Video Downloader - Download YouTube MP4 1080p, 720p HD | YTTune',
     description: 'Free YouTube video downloader online. Download YouTube videos in MP4 (1080p Full HD, 720p, 480p) fast and free. Works on Android, iPhone, Windows, and Mac.',
     keywords: 'youtube video download, youtube video mp3 mp4 download, youtube mp4 download, download youtube video, youtube video downloader, 1080p youtube video download, youtube shorts video download, youtube video downlod',
-    canonical: 'https://yttune.vercel.app/mp4',
+    canonical: canonicalUrl,
+    schema: {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'WebApplication',
+          name: 'YTTune YouTube MP4 Video Downloader',
+          url: canonicalUrl,
+          description: 'Download YouTube videos in high-definition 1080p and 720p MP4 format with synchronized audio.',
+          applicationCategory: 'MultimediaApplication',
+          operatingSystem: 'All',
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+        },
+        {
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://yttune.vercel.app/' },
+            { '@type': 'ListItem', position: 2, name: 'YouTube to MP4', item: canonicalUrl },
+          ],
+        },
+        {
+          '@type': 'FAQPage',
+          mainEntity: MP4_FAQS.map((f) => ({
+            '@type': 'Question',
+            name: f.q,
+            acceptedAnswer: { '@type': 'Answer', text: f.a },
+          })),
+        },
+      ],
+    },
   });
 
   const handleUrlChange = (val) => {

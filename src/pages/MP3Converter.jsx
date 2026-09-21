@@ -182,11 +182,42 @@ export default function MP3Converter() {
   const { toasts, addToast, removeToast } = useToast()
   const blobRef = useRef(null)
 
+  const canonicalUrl = 'https://yttune.vercel.app/mp3';
+
   useSEO({
     title: 'YouTube to MP3 Converter - Free YouTube Video MP3 Download | YTTune',
     description: 'Convert YouTube videos to high quality MP3 audio (320kbps, 256kbps, 192kbps). Free, instant, and unlimited online YouTube MP3 downloader for all devices.',
     keywords: 'youtube video mp3 mp4 download, youtube to mp3, youtube video download, youtube mp3 converter, convert youtube to mp3, free youtube mp3 downloader, download youtube audio',
-    canonical: 'https://yttune.vercel.app/mp3',
+    canonical: canonicalUrl,
+    schema: {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'WebApplication',
+          name: 'YTTune YouTube to MP3 Converter',
+          url: canonicalUrl,
+          description: 'Free online YouTube to MP3 audio converter supporting up to 320kbps high-fidelity audio.',
+          applicationCategory: 'MultimediaApplication',
+          operatingSystem: 'All',
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+        },
+        {
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://yttune.vercel.app/' },
+            { '@type': 'ListItem', position: 2, name: 'YouTube to MP3', item: canonicalUrl },
+          ],
+        },
+        {
+          '@type': 'FAQPage',
+          mainEntity: MP3_FAQS.map((f) => ({
+            '@type': 'Question',
+            name: f.q,
+            acceptedAnswer: { '@type': 'Answer', text: f.a },
+          })),
+        },
+      ],
+    },
   })
 
   useEffect(() => () => { if (blobRef.current) URL.revokeObjectURL(blobRef.current) }, [])

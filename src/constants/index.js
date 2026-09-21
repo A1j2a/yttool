@@ -1,6 +1,8 @@
 export const NAV_LINKS = [
   { label: "Video Download", path: "/mp4" },
   { label: "Audio Convert", path: "/mp3" },
+  { label: "Shorts", path: "/shorts" },
+  { label: "Thumbnail", path: "/thumbnail" },
   { label: "AI Script", path: "/ai-script" },
   { label: "Tools", path: "/tools" },
   { label: "About", path: "/about" },
@@ -30,6 +32,26 @@ export const TOOLS = [
   },
   {
     id: 3,
+    name: "YouTube Shorts Download",
+    desc: "Download YouTube Shorts in 1080p Full HD MP4 or MP3 — free",
+    icon: "Smartphone",
+    category: "Video",
+    path: "/shorts",
+    trending: true,
+    color: "#ff007f",
+  },
+  {
+    id: 4,
+    name: "Thumbnail Downloader",
+    desc: "Extract & download YouTube thumbnails in 1080p HD — free",
+    icon: "Image",
+    category: "Image",
+    path: "/thumbnail",
+    trending: true,
+    color: "#10b981",
+  },
+  {
+    id: 5,
     name: "AI Script Writer",
     desc: "Copy YouTube video scripts with AI — free",
     icon: "Sparkles",
@@ -38,7 +60,7 @@ export const TOOLS = [
     trending: true,
     color: "#ff0080",
   },
-  // { id: 4, name: 'URL Downloader', desc: 'Download media from 1000+ websites', icon: 'Download', category: 'Download', path: '/tools', trending: false, color: '#00ff88' },
+];
   // { id: 5, name: 'Image Compressor', desc: 'Compress images without quality loss', icon: 'Image', category: 'Image', path: '/tools', trending: false, color: '#ff6b35' },
   // { id: 6, name: 'Text to Speech', desc: 'Convert text to natural AI voice', icon: 'Mic', category: 'AI', path: '/tools', trending: true, color: '#00f5ff' },
   // { id: 7, name: 'PDF Converter', desc: 'Convert documents to any format', icon: 'FileText', category: 'Document', path: '/tools', trending: false, color: '#bf00ff' },
@@ -47,7 +69,6 @@ export const TOOLS = [
   // { id: 10, name: 'Code Formatter', desc: 'Format and beautify your code', icon: 'Code', category: 'Dev', path: '/tools', trending: false, color: '#ff6b35' },
   // { id: 11, name: 'Subtitle Generator', desc: 'Auto-generate subtitles from video', icon: 'Captions', category: 'Video', path: '/tools', trending: true, color: '#00f5ff' },
   // { id: 12, name: 'Thumbnail Maker', desc: 'Create viral thumbnails with AI', icon: 'LayoutTemplate', category: 'Design', path: '/tools', trending: false, color: '#bf00ff' },
-];
 
 export const CATEGORIES = [
   "All",
