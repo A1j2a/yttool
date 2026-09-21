@@ -125,10 +125,10 @@ function getCookieArgs() {
 function getYtDlpCommonArgs() {
   const cookieArgs = getCookieArgs()
   if (cookieArgs.length > 0) {
-    // When cookies are present, use web/ios which work with cookies and don't need PO-tokens
+    // When cookies are present, do NOT force restricted player_client.
+    // Cookies authenticate standard extraction which unlocks all formats without PO-Token requirement.
     return [
       ...cookieArgs,
-      '--extractor-args', 'youtube:player_client=ios,web,mweb',
       '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       '--no-check-certificates',
     ]
@@ -209,6 +209,7 @@ app.get('/api/mp3', async (req, res) => {
       const ytProc = spawn(YTDLP, [
         '--ffmpeg-location', FFMPEG,
         ...getYtDlpCommonArgs(),
+        '-f', 'ba/b',
         '-x',
         '--audio-format', 'mp3',
         '--audio-quality', '0',
@@ -278,7 +279,7 @@ app.get('/api/mp4', async (req, res) => {
     const { title, thumb } = await getVideoInfo(decoded)
     const safeTitle = (title || 'video').replace(/[^a-z0-9]/gi, '_').toLowerCase()
 
-    const format = `best[height<=${safeRes}][ext=mp4]/bestvideo[height<=${safeRes}][ext=mp4]+bestaudio[ext=m4a]/best[height<=${safeRes}]/best`
+    const format = `bv*[height<=${safeRes}]+ba/b[height<=${safeRes}]/bv*+ba/best`
 
     await new Promise((resolve, reject) => {
       const ytProc = spawn(YTDLP, [
