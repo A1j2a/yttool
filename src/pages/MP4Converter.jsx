@@ -308,6 +308,20 @@ export default function MP4Converter() {
       setProgress(100)
       setResult({ title, thumb, downloadUrl })
       setStatus("done")
+
+      // Automatically download directly to user's device
+      try {
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = `${(title || "video").replace(/[^a-z0-9]/gi, "_").toLowerCase()}_${resolution.label}.mp4`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setSaved(true);
+        addToast("Downloaded directly to your device!", "success");
+      } catch {
+        // Fallback
+      }
     } catch (err) {
       setStatus("error");
       addToast(err.message || "Conversion failed", "error");
@@ -499,6 +513,10 @@ export default function MP4Converter() {
                   {step}
                 </span>
               ))}
+            </div>
+            <div className="mt-4 pt-3 border-t border-white/5 flex items-center gap-2 text-purple-400 text-xs font-medium bg-purple-500/10 px-3 py-2 rounded-xl">
+              <Download size={14} className="animate-bounce flex-shrink-0" />
+              <span>Conversion complete hote hi video file aapki device me automatically download ho jayegi.</span>
             </div>
           </motion.div>
         )}

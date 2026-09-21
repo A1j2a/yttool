@@ -212,10 +212,11 @@ app.get('/api/mp3', async (req, res) => {
       const ytProc = spawn(YTDLP, [
         '--ffmpeg-location', FFMPEG,
         ...getYtDlpCommonArgs(),
+        '--concurrent-fragments', '3',
         '-f', 'ba/b',
         '-x',
         '--audio-format', 'mp3',
-        '--audio-quality', '0',
+        '--audio-quality', '4',
         '--no-playlist',
         '-o', tmpFile,
         '--',
@@ -282,12 +283,13 @@ app.get('/api/mp4', async (req, res) => {
     const { title, thumb } = await getVideoInfo(decoded)
     const safeTitle = (title || 'video').replace(/[^a-z0-9]/gi, '_').toLowerCase()
 
-    const format = `bv*[height<=${safeRes}]+ba/b[height<=${safeRes}]/bv*+ba/best`
+    const format = `bv*[height<=${safeRes}][ext=mp4]+ba[ext=m4a]/bv*[height<=${safeRes}]+ba/best[height<=${safeRes}]/best`
 
     await new Promise((resolve, reject) => {
       const ytProc = spawn(YTDLP, [
         '--ffmpeg-location', FFMPEG,
         ...getYtDlpCommonArgs(),
+        '--concurrent-fragments', '3',
         '-f', format,
         '--no-playlist',
         '--merge-output-format', 'mp4',

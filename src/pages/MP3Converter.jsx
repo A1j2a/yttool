@@ -228,6 +228,20 @@ export default function MP3Converter() {
       const filename = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.mp3`
       setResult({ blobUrl, title, thumb, filename })
       setStatus('done')
+
+      // Automatically download directly to user's device
+      try {
+        const a = document.createElement('a')
+        a.href = blobUrl
+        a.download = filename
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        setSaved(true)
+        addToast('Downloaded directly to your device!', 'success')
+      } catch {
+        // In case browser restricts automatic popup
+      }
     } catch (err) {
       setStatus('error')
       addToast(err.message || 'Conversion failed. Try again.', 'error')
@@ -358,8 +372,12 @@ export default function MP3Converter() {
               <div className="w-10 h-10 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin flex-shrink-0" />
               <div>
                 <p className="text-white text-sm font-medium">Converting to MP3...</p>
-                <p className="text-slate-500 text-xs mt-0.5">Downloading & converting, please wait</p>
+                <p className="text-slate-400 text-xs mt-0.5">Please wait, processing audio from YouTube</p>
               </div>
+            </div>
+            <div className="mt-4 pt-3 border-t border-white/5 flex items-center gap-2 text-cyan-400 text-xs font-medium bg-cyan-500/10 px-3 py-2 rounded-xl">
+              <Download size={14} className="animate-bounce flex-shrink-0" />
+              <span>Conversion complete hote hi audio file aapki device me automatically download ho jayegi.</span>
             </div>
           </motion.div>
         )}
