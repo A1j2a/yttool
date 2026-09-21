@@ -124,19 +124,22 @@ function getCookieArgs() {
 
 function getYtDlpCommonArgs() {
   const cookieArgs = getCookieArgs()
+  const baseArgs = [
+    '--js-runtimes', 'node',
+    '--remote-components', 'ejs:github',
+    '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    '--no-check-certificates',
+  ]
   if (cookieArgs.length > 0) {
-    // When cookies are present, do NOT force restricted player_client.
-    // Cookies authenticate standard extraction which unlocks all formats without PO-Token requirement.
+    // When cookies are present, authenticate extraction without forcing restricted player_client
     return [
       ...cookieArgs,
-      '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      '--no-check-certificates',
+      ...baseArgs,
     ]
   }
   return [
     '--extractor-args', 'youtube:player_client=android,mweb,tv_embedded',
-    '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    '--no-check-certificates',
+    ...baseArgs,
   ]
 }
 
