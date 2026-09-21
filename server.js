@@ -104,6 +104,30 @@ app.use('/api', limiter)
 const isValidYouTubeUrl = (url) =>
   /^https?:\/\/(www\.)?(youtube\.com\/watch\?.*v=[\w-]{11}|youtu\.be\/[\w-]{11}|youtube\.com\/shorts\/[\w-]{11})/.test(url)
 
+// ── Anti-bot & Cookie Support ────────────────────────────────────────────────
+function getCookieArgs() {
+  const cookieFile = path.join(process.cwd(), 'cookies.txt')
+  if (fs.existsSync(cookieFile)) {
+    return ['--cookies', cookieFile]
+  }
+  if (process.env.YOUTUBE_COOKIES) {
+    const tmpCookie = path.join(os.tmpdir(), 'yt_cookies.txt')
+    try {
+      fs.writeFileSync(tmpCookie, process.env.YOUTUBE_COOKIES.trim(), 'utf8')
+      return ['--cookies', tmpCookie]
+    } catch (e) {
+      console.error('[Cookies] Failed to write temp cookies:', e.message)
+    }
+  }
+  return []
+}
+
+const COMMON_YTDLP_ARGS = [
+  '--extractor-args', 'youtube:player_client=android,mweb,tv_embedded',
+  '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  '--no-check-certificates',
+]
+
 // ── shared: get video info fast (oEmbed first ~50ms, yt-dlp fallback) ─────────
 async function getVideoInfo(url) {
   // 1. Try YouTube oEmbed API for instant title & thumbnail (<100ms)
@@ -125,7 +149,15 @@ async function getVideoInfo(url) {
 
   // 2. Fallback to yt-dlp with timeout
   return new Promise((resolve, reject) => {
-    const proc = spawn(YTDLP, ['--print', '%(title)s\n%(thumbnail)s', '--no-playlist', url])
+    const args = [
+      ...getCookieArgs(),
+      ...COMMON_YTDLP_ARGS,
+      '--print', '%(title)s\n%(thumbnail)s',
+      '--no-playlist',
+      '--',
+      url
+    ]
+    const proc = spawn(YTDLP, args)
     let out = ''
     let errOut = ''
     const timer = setTimeout(() => {
@@ -165,7 +197,8 @@ app.get('/api/mp3', async (req, res) => {
     await new Promise((resolve, reject) => {
       const ytProc = spawn(YTDLP, [
         '--ffmpeg-location', FFMPEG,
-        '--extractor-args', 'youtube:player_client=ios,android,web',
+        ...getCookieArgs(),
+        ...COMMON_YTDLP_ARGS,
         '-x',
         '--audio-format', 'mp3',
         '--audio-quality', '0',
@@ -240,7 +273,8 @@ app.get('/api/mp4', async (req, res) => {
     await new Promise((resolve, reject) => {
       const ytProc = spawn(YTDLP, [
         '--ffmpeg-location', FFMPEG,
-        '--extractor-args', 'youtube:player_client=ios,android,web',
+        ...getCookieArgs(),
+        ...COMMON_YTDLP_ARGS,
         '-f', format,
         '--no-playlist',
         '--merge-output-format', 'mp4',
