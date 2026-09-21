@@ -22,7 +22,7 @@ export default function About() {
             by Creators
           </h1>
           <p className="text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed">
-            YTTube was born from frustration. We were tired of juggling 10
+            YTTune was born from frustration. We were tired of juggling 10
             different tools, paying for 5 subscriptions, and wasting hours on
             simple tasks. So we built the platform we always wanted.
           </p>
@@ -83,7 +83,7 @@ export default function About() {
           className="glass rounded-2xl p-10 mb-20"
         >
           <h2 className="text-2xl font-black text-white text-center mb-10">
-            YTTube by the Numbers
+            YTTune by the Numbers
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {STATS.map((stat, i) => (

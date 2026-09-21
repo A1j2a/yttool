@@ -4,10 +4,10 @@ import { useSEO } from "../hooks/useSEO";
 
 export default function BlogYoutubeToMp3() {
   useSEO({
-    title: "How to Convert YouTube to MP3 Free — YTTube",
+    title: "How to Convert YouTube to MP3 Free — YTTune",
     description:
       "Step-by-step guide to convert any YouTube video to MP3 audio for free. No software needed, works on mobile and desktop.",
-    canonical: "https://YTTube.io/blog/youtube-to-mp3",
+    canonical: "https://yttune.vercel.app/blog/youtube-to-mp3",
   });
 
   return (
@@ -20,7 +20,7 @@ export default function BlogYoutubeToMp3() {
 
         <p className="text-slate-300 leading-relaxed mb-6">
           Want to save your favourite YouTube music or podcast as an MP3? With{" "}
-          <strong className="text-white">YTTube</strong>, you can convert any
+          <strong className="text-white">YTTune</strong>, you can convert any
           YouTube video to high-quality MP3 audio in seconds — completely free,
           no account needed.
         </p>
@@ -35,7 +35,7 @@ export default function BlogYoutubeToMp3() {
           <li>
             Paste it into the{" "}
             <Link to="/mp3" className="text-cyan-400 hover:underline">
-              YTTube MP3 Converter
+              YTTune MP3 Converter
             </Link>
             .
           </li>
@@ -52,7 +52,7 @@ export default function BlogYoutubeToMp3() {
         </ol>
 
         <h2 className="text-2xl font-bold text-white mt-10 mb-4">
-          Why Choose YTTube?
+          Why Choose YTTune?
         </h2>
         <ul className="list-disc list-inside space-y-2 text-slate-300 mb-8">
           <li>100% free — no hidden fees or subscriptions</li>
@@ -77,7 +77,7 @@ export default function BlogYoutubeToMp3() {
             },
             {
               q: "Does it work on iPhone?",
-              a: "Yes! YTTube works on all devices including iPhone, Android, Mac, and Windows.",
+              a: "Yes! YTTune works on all devices including iPhone, Android, Mac, and Windows.",
             },
           ].map(({ q, a }) => (
             <div key={q} className="glass rounded-xl p-4">

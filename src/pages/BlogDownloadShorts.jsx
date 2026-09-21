@@ -4,10 +4,10 @@ import { useSEO } from "../hooks/useSEO";
 
 export default function BlogDownloadShorts() {
   useSEO({
-    title: "How to Download YouTube Shorts — YTTube",
+    title: "How to Download YouTube Shorts — YTTune",
     description:
       "Download YouTube Shorts videos for free in HD quality. Works on iPhone, Android, and desktop. No app needed.",
-    canonical: "https://YTTube.io/blog/download-youtube-shorts",
+    canonical: "https://yttune.vercel.app/blog/download-youtube-shorts",
   });
 
   return (
@@ -21,7 +21,7 @@ export default function BlogDownloadShorts() {
         <p className="text-slate-300 leading-relaxed mb-6">
           YouTube Shorts are short-form vertical videos — and now you can
           download them instantly using{" "}
-          <strong className="text-white">YTTube</strong>. Save any Short as MP4
+          <strong className="text-white">YTTune</strong>. Save any Short as MP4
           or extract its audio as MP3, all for free.
         </p>
 
@@ -40,7 +40,7 @@ export default function BlogDownloadShorts() {
           <li>
             Paste it into the{" "}
             <Link to="/mp4" className="text-cyan-400 hover:underline">
-              YTTube MP4 Downloader
+              YTTune MP4 Downloader
             </Link>
             .
           </li>
@@ -66,7 +66,7 @@ export default function BlogDownloadShorts() {
           {[
             {
               q: "Does it work on mobile?",
-              a: "Yes, YTTube works on all devices — iPhone, Android, and desktop browsers.",
+              a: "Yes, YTTune works on all devices — iPhone, Android, and desktop browsers.",
             },
             {
               q: "What resolution are YouTube Shorts?",

@@ -38,9 +38,9 @@ export default function Landing() {
   }
 
   useSEO({
-    title: 'YouTube Video Downloader - Free YouTube Video MP3 MP4 Download Online | YTTune',
-    description: 'Free online YouTube video downloader and MP3 converter. Download YouTube videos in MP4 (1080p, 720p HD) and convert YouTube to MP3 audio 320kbps fast with no software or signup.',
-    keywords: 'youtube video mp3 mp4 download, youtube video download, youtube video downlod, youtube downloader, youtube to mp3, youtube to mp4, download youtube video, youtube video download mp3, youtube video download mp4, yt mp3 converter',
+    title: 'YouTube Video Downloader & Free YouTube MP3 Converter | YTTune',
+    description: 'Free online YouTube video downloader & MP3 converter. Download free YouTube MP3 audio (320kbps) & MP4 HD videos fast with no software or signup.',
+    keywords: 'free youtube mp3, youtube free mp3, free youtube mp3 download, youtube mp3 download, free youtube downloader mp3, youtube video mp3 mp4 download, youtube video download, youtube mp3 dowland, youtube mp3 indir, youtube to mp3, youtube to mp4, yt mp3 converter',
     canonical: 'https://yttune.vercel.app/',
     schema: {
       '@context': 'https://schema.org',
@@ -462,10 +462,10 @@ export default function Landing() {
           <div className="grid sm:grid-cols-3 gap-5">
             {[
               {
-                title: 'YouTube to MP3 Audio',
+                title: 'Free YouTube to MP3 Audio',
                 desc: 'Extract MP3 audio from any YouTube video in 320kbps, 256kbps, or 192kbps. Complete with metadata & album art.',
                 link: '/mp3',
-                cta: 'Convert MP3 Online',
+                cta: 'Convert Free MP3 Online',
               },
               {
                 title: 'YouTube Video MP4 HD',

@@ -180,7 +180,7 @@ export const TESTIMONIALS = [
     name: "Sarah Chen",
     role: "Content Creator",
     avatar: "SC",
-    text: "YTTube completely changed my workflow. I save 3+ hours every week just on video conversions alone.",
+    text: "YTTune completely changed my workflow. I save 3+ hours every week just on video conversions alone.",
     rating: 5,
   },
   {
@@ -208,8 +208,8 @@ export const TESTIMONIALS = [
 
 export const FAQS = [
   {
-    q: "Is YTTube really free to use?",
-    a: "Yes! YTTube is completely free. No signup, no hidden charges — convert and download as much as you want.",
+    q: "Is YTTune really free to use?",
+    a: "Yes! YTTune is completely free. No signup, no hidden charges — convert and download as much as you want.",
   },
   {
     q: "Which video platforms are supported?",
@@ -224,7 +224,7 @@ export const FAQS = [
     a: "Free users get up to 720p. Pro users get up to 4K resolution for video and 320kbps for audio.",
   },
   {
-    q: "Can I use YTTube for commercial projects?",
+    q: "Can I use YTTune for commercial projects?",
     a: "Pro and Enterprise plans include commercial usage rights. Please review our terms for specific use cases.",
   },
   {

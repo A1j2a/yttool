@@ -135,8 +135,12 @@ const API = API_BASE
 
 const MP3_FAQS = [
   {
-    q: 'How do I download a YouTube video as an MP3 file?',
-    a: 'Copy the URL of the YouTube video, paste it into the converter box above, choose your desired quality (up to 320 kbps), and click "Convert to MP3". When ready, click "Download MP3" to save it directly to your device.',
+    q: 'Is this free YouTube MP3 converter really 100% free?',
+    a: 'Yes, YTTune is a 100% free YouTube to MP3 converter and downloader with unlimited conversions. There are no subscriptions, no hidden fees, and no registration required.',
+  },
+  {
+    q: 'How do I do a free YouTube MP3 download on mobile and PC?',
+    a: 'Copy the URL of the YouTube video, paste it into the converter box above, select your desired bitrate (up to 320 kbps), and click "Convert to MP3". Your audio file will be saved directly to your device storage.',
   },
   {
     q: 'What is the highest audio quality supported for YouTube MP3 download?',
@@ -144,15 +148,15 @@ const MP3_FAQS = [
   },
   {
     q: 'Can I download YouTube MP3 on mobile (Android and iPhone)?',
-    a: 'Yes! YTTune works natively on mobile Safari, Chrome, Samsung Internet, and Firefox. You can download YouTube MP3 audio directly to your mobile phone storage.',
+    a: 'Yes! YTTune works natively on mobile Safari, Chrome, Samsung Internet, and Firefox. You can download free YouTube MP3 audio directly to your mobile phone storage.',
   },
   {
     q: 'Can I convert YouTube Shorts to MP3 audio?',
     a: 'Yes, our converter fully supports YouTube Shorts links. Simply copy the Shorts link and paste it here to extract the audio track.',
   },
   {
-    q: 'Is this YouTube to MP3 converter free?',
-    a: 'Yes, 100% free with unlimited conversions. No account signup, subscription, or software installation is required.',
+    q: 'Does YTTune support YouTube MP3 indir (Turkish & global users)?',
+    a: 'Evet! YTTune ile YouTube videolarını ücretsiz olarak MP3 formatında indirebilirsiniz (Free YouTube MP3 indir). Telefon, tablet ve bilgisayarda hızlı ve sınırsız çalışır.',
   },
 ]
 
@@ -185,16 +189,16 @@ export default function MP3Converter() {
   const canonicalUrl = 'https://yttune.vercel.app/mp3';
 
   useSEO({
-    title: 'YouTube to MP3 Converter - Free YouTube Video MP3 Download | YTTune',
-    description: 'Convert YouTube videos to high quality MP3 audio (320kbps, 256kbps, 192kbps). Free, instant, and unlimited online YouTube MP3 downloader for all devices.',
-    keywords: 'youtube video mp3 mp4 download, youtube to mp3, youtube video download, youtube mp3 converter, convert youtube to mp3, free youtube mp3 downloader, download youtube audio',
+    title: 'Free YouTube to MP3 Converter - Fast YouTube MP3 Download (320kbps) | YTTune',
+    description: 'Free YouTube to MP3 converter & downloader. Convert and download free YouTube MP3 audio in 320kbps HD quality fast. 100% free, no software, works on mobile & PC.',
+    keywords: 'free youtube mp3, youtube free mp3, youtube mp3 download, free youtube mp3 download, free youtube downloader mp3, youtube to mp3, youtube mp3 dowland, youtube mp3 indir, free youtube indir, free download youtube, convert youtube to mp3, yt mp3',
     canonical: canonicalUrl,
     schema: {
       '@context': 'https://schema.org',
       '@graph': [
         {
           '@type': 'WebApplication',
-          name: 'YTTune YouTube to MP3 Converter',
+          name: 'YTTune Free YouTube to MP3 Converter',
           url: canonicalUrl,
           description: 'Free online YouTube to MP3 audio converter supporting up to 320kbps high-fidelity audio.',
           applicationCategory: 'MultimediaApplication',
@@ -304,9 +308,9 @@ export default function MP3Converter() {
             <Music size={28} className="text-cyan-400" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-black text-white mb-3">
-            Video to <span className="neon-text">MP3</span>
+            Free YouTube to <span className="neon-text">MP3 Converter</span>
           </h1>
-          <p className="text-slate-500 text-sm sm:text-base">Extract high-quality audio from any YouTube video — 100% free, no signup.</p>
+          <p className="text-slate-400 text-sm sm:text-base max-w-xl mx-auto">Fast, free YouTube video MP3 download in studio quality (up to 320 kbps). Unlimited conversions, no software or signup required.</p>
         </motion.div>
 
         {/* Format Switcher Tabs */}
@@ -483,7 +487,7 @@ export default function MP3Converter() {
         <section className="mt-16 pt-12 border-t border-white/5 space-y-12">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-              YouTube Video MP3 Download — High Quality 320kbps Audio Converter
+              Free YouTube MP3 Download — High Quality 320kbps Audio Converter
             </h2>
             <p className="text-slate-300 leading-relaxed mb-4 text-sm sm:text-base">
               YTTune provides the fastest and most reliable online tool for <strong className="text-white">YouTube video MP3 download</strong>. Extract crystal-clear music, podcast episodes, lectures, audiobooks, and background tracks from YouTube videos in pure MP3 format. With support for bitrates up to 320kbps, enjoy true studio quality sound without loss of fidelity.
@@ -512,7 +516,7 @@ export default function MP3Converter() {
           {/* How to Guide */}
           <div className="glass rounded-2xl p-6 sm:p-8 border border-white/10 space-y-4">
             <h2 className="text-xl sm:text-2xl font-bold text-white">
-              How to Download YouTube Videos to MP3 Online
+              How to Download Free YouTube Videos to MP3 Online
             </h2>
             <ol className="list-decimal list-inside space-y-3 text-slate-300 text-sm">
               <li><strong className="text-white">Copy Link:</strong> Go to YouTube and copy the URL of the video you want to convert.</li>
@@ -525,7 +529,7 @@ export default function MP3Converter() {
           {/* MP3 FAQs */}
           <div className="space-y-6">
             <h2 className="text-xl sm:text-2xl font-bold text-white">
-              YouTube Video MP3 Download — FAQs
+              Free YouTube MP3 Download — FAQs
             </h2>
             <FAQAccordion faqs={MP3_FAQS} />
           </div>

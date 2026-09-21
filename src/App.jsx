@@ -1,3 +1,9 @@
+
+// Redirect legacy deployment URL if accessed directly
+if (typeof window !== "undefined" && window.location.hostname.includes("youtube-mp3-converter-mu.vercel.app")) {
+  window.location.replace("https://yttune.vercel.app" + window.location.pathname + window.location.search);
+}
+
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { lazy, Suspense } from "react";

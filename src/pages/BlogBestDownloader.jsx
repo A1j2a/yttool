@@ -4,10 +4,10 @@ import { useSEO } from "../hooks/useSEO";
 
 export default function BlogBestDownloader() {
   useSEO({
-    title: "Best Free YouTube Downloader 2025 — YTTube",
+    title: "Best Free YouTube Downloader 2025 — YTTune",
     description:
-      "Looking for the best free YouTube downloader? YTTube lets you download YouTube videos in HD and convert to MP3 — no software, no signup.",
-    canonical: "https://YTTube.io/blog/best-youtube-downloader",
+      "Looking for the best free YouTube downloader? YTTune lets you download YouTube videos in HD and convert to MP3 — no software, no signup.",
+    canonical: "https://yttune.vercel.app/blog/best-youtube-downloader",
   });
 
   return (
@@ -21,7 +21,7 @@ export default function BlogBestDownloader() {
         <p className="text-slate-300 leading-relaxed mb-6">
           There are dozens of YouTube downloaders online, but most are cluttered
           with ads, require software installs, or limit your downloads.{" "}
-          <strong className="text-white">YTTube</strong> is different — it's a
+          <strong className="text-white">YTTune</strong> is different — it's a
           clean, fast, browser-based tool that works instantly.
         </p>
 
@@ -38,7 +38,7 @@ export default function BlogBestDownloader() {
         </ul>
 
         <h2 className="text-2xl font-bold text-white mt-10 mb-4">
-          YTTube Features
+          YTTune Features
         </h2>
         <div className="grid sm:grid-cols-2 gap-4 mb-8">
           {[
@@ -82,7 +82,7 @@ export default function BlogBestDownloader() {
           <li>
             Open{" "}
             <Link to="/mp4" className="text-cyan-400 hover:underline">
-              YTTube MP4 Downloader
+              YTTune MP4 Downloader
             </Link>
             .
           </li>
