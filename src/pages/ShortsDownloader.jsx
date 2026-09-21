@@ -401,7 +401,7 @@ export default function ShortsDownloader() {
           <h2 className="text-2xl font-bold text-white text-center mb-6">
             Frequently Asked Questions about YouTube Shorts Download
           </h2>
-          <FAQAccordion items={SHORTS_FAQS} />
+          <FAQAccordion faqs={SHORTS_FAQS} />
         </section>
 
         {/* Bottom Toasts */}

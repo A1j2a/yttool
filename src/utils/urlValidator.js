@@ -17,6 +17,7 @@ export function isValidVideoUrl(url) {
 }
 
 export function extractVideoId(url) {
+  if (!url || typeof url !== 'string') return null
   const m = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/)
   return m ? m[1] : null
 }

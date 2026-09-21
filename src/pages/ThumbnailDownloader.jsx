@@ -350,7 +350,7 @@ export default function ThumbnailDownloader() {
           <h2 className="text-2xl font-bold text-white text-center mb-6">
             Frequently Asked Questions about YouTube Thumbnail Download
           </h2>
-          <FAQAccordion items={THUMBNAIL_FAQS} />
+          <FAQAccordion faqs={THUMBNAIL_FAQS} />
         </section>
 
         {/* Toasts */}

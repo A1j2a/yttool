@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, TrendingUp, Music, Video, Sparkles, Download, Image, Mic, FileText, QrCode, Palette, Code, Captions, LayoutTemplate } from 'lucide-react'
+import { ArrowRight, TrendingUp, Music, Video, Sparkles, Download, Image, Mic, FileText, QrCode, Palette, Code, Captions, LayoutTemplate, Smartphone } from 'lucide-react'
 
-const ICON_MAP = { Music, Video, Sparkles, Download, Image, Mic, FileText, QrCode, Palette, Code, Captions, LayoutTemplate }
+const ICON_MAP = { Music, Video, Sparkles, Download, Image, Mic, FileText, QrCode, Palette, Code, Captions, LayoutTemplate, Smartphone }
 
 export default function ToolCard({ tool, index = 0 }) {
   const Icon = ICON_MAP[tool.icon] || Sparkles

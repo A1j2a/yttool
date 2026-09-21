@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 
-export default function FAQAccordion({ faqs }) {
+export default function FAQAccordion({ faqs, items }) {
+  const list = faqs || items || []
   const [open, setOpen] = useState(null)
   return (
     <div className="space-y-3">
-      {faqs.map((faq, i) => (
+      {list.map((faq, i) => (
         <div key={i} className="glass rounded-xl overflow-hidden">
           <button
             className="w-full flex items-center justify-between p-5 text-left"
