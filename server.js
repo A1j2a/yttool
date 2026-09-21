@@ -352,8 +352,10 @@ app.get('/api/yt-info', async (req, res) => {
   }
 })
 
-// ── Health check ──────────────────────────────────────────────────────────────
+// ── Health check & Root ───────────────────────────────────────────────────────
+app.get('/', (_, res) => res.json({ status: 'ok', message: 'YTTune API Server is running', ts: Date.now() }))
 app.get('/health', (_, res) => res.json({ status: 'ok', ts: Date.now() }))
+
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((_, res) => res.status(404).json({ error: 'Not found' }))
