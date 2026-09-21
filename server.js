@@ -387,8 +387,17 @@ app.get('/api/yt-info', async (req, res) => {
 })
 
 // ── Health check & Root ───────────────────────────────────────────────────────
-app.get('/', (_, res) => res.json({ status: 'ok', message: 'YTTune API Server is running', ts: Date.now() }))
-app.get('/health', (_, res) => res.json({ status: 'ok', ts: Date.now() }))
+app.get('/', (_, res) => res.json({
+  status: 'ok',
+  message: 'YTTune API Server is running',
+  cookies_active: Boolean(process.env.YOUTUBE_COOKIES || fs.existsSync(path.join(process.cwd(), 'cookies.txt'))),
+  ts: Date.now()
+}))
+app.get('/health', (_, res) => res.json({
+  status: 'ok',
+  cookies_active: Boolean(process.env.YOUTUBE_COOKIES || fs.existsSync(path.join(process.cwd(), 'cookies.txt'))),
+  ts: Date.now()
+}))
 
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
