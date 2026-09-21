@@ -31,3 +31,8 @@ dist-ssr
 # Binaries
 yt-dlp
 
+# Cookies
+cookies.txt
+*cookies*.txt
+
+
