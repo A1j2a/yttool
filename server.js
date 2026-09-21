@@ -122,11 +122,23 @@ function getCookieArgs() {
   return []
 }
 
-const COMMON_YTDLP_ARGS = [
-  '--extractor-args', 'youtube:player_client=android,mweb,tv_embedded',
-  '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  '--no-check-certificates',
-]
+function getYtDlpCommonArgs() {
+  const cookieArgs = getCookieArgs()
+  if (cookieArgs.length > 0) {
+    // When cookies are present, use web/ios which work with cookies and don't need PO-tokens
+    return [
+      ...cookieArgs,
+      '--extractor-args', 'youtube:player_client=ios,web,mweb',
+      '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      '--no-check-certificates',
+    ]
+  }
+  return [
+    '--extractor-args', 'youtube:player_client=android,mweb,tv_embedded',
+    '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    '--no-check-certificates',
+  ]
+}
 
 // ── shared: get video info fast (oEmbed first ~50ms, yt-dlp fallback) ─────────
 async function getVideoInfo(url) {
@@ -150,8 +162,7 @@ async function getVideoInfo(url) {
   // 2. Fallback to yt-dlp with timeout
   return new Promise((resolve, reject) => {
     const args = [
-      ...getCookieArgs(),
-      ...COMMON_YTDLP_ARGS,
+      ...getYtDlpCommonArgs(),
       '--print', '%(title)s\n%(thumbnail)s',
       '--no-playlist',
       '--',
@@ -197,8 +208,7 @@ app.get('/api/mp3', async (req, res) => {
     await new Promise((resolve, reject) => {
       const ytProc = spawn(YTDLP, [
         '--ffmpeg-location', FFMPEG,
-        ...getCookieArgs(),
-        ...COMMON_YTDLP_ARGS,
+        ...getYtDlpCommonArgs(),
         '-x',
         '--audio-format', 'mp3',
         '--audio-quality', '0',
@@ -273,8 +283,7 @@ app.get('/api/mp4', async (req, res) => {
     await new Promise((resolve, reject) => {
       const ytProc = spawn(YTDLP, [
         '--ffmpeg-location', FFMPEG,
-        ...getCookieArgs(),
-        ...COMMON_YTDLP_ARGS,
+        ...getYtDlpCommonArgs(),
         '-f', format,
         '--no-playlist',
         '--merge-output-format', 'mp4',
