@@ -11,6 +11,8 @@ import { useSEO } from '../hooks/useSEO'
 import Toast from '../components/Toast'
 import FAQAccordion from '../components/FAQAccordion'
 import { extractVideoId } from '../utils/urlValidator'
+import { API_BASE } from '../config/api'
+
 
 // ─── Audio Player ─────────────────────────────────────────────────────────────
 function AudioPlayer({ blobUrl }) {
@@ -129,7 +131,7 @@ function AudioPlayer({ blobUrl }) {
 }
 
 // ─── API ──────────────────────────────────────────────────────────────────────
-const API = import.meta.env.VITE_API_URL || ''
+const API = API_BASE
 
 const MP3_FAQS = [
   {
@@ -159,6 +161,10 @@ async function convertToMp3(videoUrl) {
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
     throw new Error(err.error || `Server error ${res.status}`)
+  }
+  const contentType = res.headers.get('content-type') || ''
+  if (contentType.includes('text/html')) {
+    throw new Error('Server returned invalid content. Please check backend connection.')
   }
   const title = decodeURIComponent(res.headers.get('X-Video-Title') || 'Audio Track')
   const thumb = decodeURIComponent(res.headers.get('X-Video-Thumb') || '')

@@ -23,6 +23,8 @@ import { useToast } from "../hooks/useToast";
 import { useSEO } from "../hooks/useSEO";
 import Toast from "../components/Toast";
 import FAQAccordion from "../components/FAQAccordion";
+import { API_BASE } from "../config/api";
+
 import { isValidVideoUrl, extractVideoId } from "../utils/urlValidator";
 
 const MP4_FAQS = [
@@ -236,13 +238,17 @@ function VideoPlayer({ src, title, thumb }) {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const API = import.meta.env.VITE_API_URL || '';
+const API = API_BASE;
 
 async function convertToMp4(url, resolution) {
   const res = await fetch(`${API}/api/mp4?url=${encodeURIComponent(url)}&resolution=${resolution}`)
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
     throw new Error(err.error || `Server error ${res.status}`)
+  }
+  const contentType = res.headers.get('content-type') || ''
+  if (contentType.includes('text/html')) {
+    throw new Error('Server returned invalid content. Please check backend connection.')
   }
   const title = decodeURIComponent(res.headers.get('X-Video-Title') || 'Video')
   const thumb = decodeURIComponent(res.headers.get('X-Video-Thumb') || '')

@@ -8,6 +8,8 @@ import AnimatedButton from '../components/AnimatedButton'
 import { useToast } from '../hooks/useToast'
 import { useSEO } from '../hooks/useSEO'
 import Toast from '../components/Toast'
+import { API_BASE } from '../config/api'
+
 
 const TABS = [
   { key: 'transcript', label: 'Script / Transcript', icon: FileText },
@@ -52,8 +54,12 @@ export default function AIScript() {
     setStatus('loading')
     setData(null)
     try {
-      const API = import.meta.env.VITE_API_URL || ''
+      const API = API_BASE
       const res = await fetch(`${API}/api/yt-info?url=${encodeURIComponent(trimmed)}`)
+      const contentType = res.headers.get('content-type') || ''
+      if (contentType.includes('text/html')) {
+        throw new Error('Server returned invalid response. Please check backend connection.')
+      }
       const text = await res.text()
       let json
       try { json = JSON.parse(text) } catch { throw new Error('Server error, please try again') }
