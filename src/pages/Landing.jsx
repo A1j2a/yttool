@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, Download, Sparkles, Star, Music, Video, X } from 'lucide-react'
+import { ArrowRight, Download, Sparkles, Star, Music, Video, X, Check } from 'lucide-react'
 import { PageWrapper } from '../animations'
 import ToolCard from '../components/ToolCard'
 import FeatureCard from '../components/FeatureCard'
@@ -301,9 +301,9 @@ export default function Landing() {
               <div className="space-y-3 text-sm">
                 <div className="text-slate-500 text-xs">Prompt: "YouTube video about productivity hacks"</div>
                 <div className="h-px bg-white/5" />
-                <p className="text-cyan-400 font-semibold">🎬 Hook (0-5 seconds)</p>
+                <p className="text-cyan-400 font-semibold">Hook (0-5 seconds)</p>
                 <p className="text-slate-300">"What if I told you that 90% of people are wasting 3 hours every single day? Today I'm revealing the 5 productivity secrets that changed my life..."</p>
-                <p className="text-purple-400 font-semibold">📌 Main Points</p>
+                <p className="text-purple-400 font-semibold">Main Points</p>
                 <p className="text-slate-400">1. The 2-minute rule that eliminates procrastination<br />2. Time-blocking with the Pomodoro method<br />3. Digital minimalism for deep focus...</p>
                 <div className="flex items-center gap-2 mt-4">
                   <div className="flex-1 h-1.5 rounded-full bg-white/5">
@@ -432,7 +432,7 @@ export default function Landing() {
             <h2 className="text-3xl sm:text-4xl font-black text-white mb-4 relative z-10">
               Start using free tools today
             </h2>
-            <p className="text-slate-400 mb-8 relative z-10">Join 850,000+ creators using YTTune every day — completely free.</p>
+            <p className="text-slate-400 mb-8 relative z-10">Free, fast, and unlimited YouTube downloading and conversion for creators worldwide.</p>
             <div className="flex flex-wrap gap-4 justify-center relative z-10">
               <AnimatedButton onClick={() => navigate('/tools')}>
                 Start for Free <ArrowRight size={16} />
@@ -516,19 +516,19 @@ export default function Landing() {
             </h2>
             <ul className="grid sm:grid-cols-2 gap-4 text-sm text-slate-300">
               <li className="flex items-start gap-2">
-                <span className="text-cyan-400 mt-1">✔</span>
+                <Check size={16} className="text-cyan-400 mt-0.5 flex-shrink-0" />
                 <span><strong className="text-white">No Registration:</strong> No signups, no email required, and no credit card ever.</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-cyan-400 mt-1">✔</span>
+                <Check size={16} className="text-cyan-400 mt-0.5 flex-shrink-0" />
                 <span><strong className="text-white">High Quality 1080p & 320kbps:</strong> Enjoy lossless audio and crisp high-definition video.</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-cyan-400 mt-1">✔</span>
+                <Check size={16} className="text-cyan-400 mt-0.5 flex-shrink-0" />
                 <span><strong className="text-white">Works on All Devices:</strong> Android phones, iPhones, iPads, MacBooks, and Windows PCs.</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-cyan-400 mt-1">✔</span>
+                <Check size={16} className="text-cyan-400 mt-0.5 flex-shrink-0" />
                 <span><strong className="text-white">Zero Watermarks:</strong> Keep your downloaded MP4 videos completely clean without annoying logos.</span>
               </li>
             </ul>

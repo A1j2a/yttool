@@ -294,7 +294,7 @@ export default function ThumbnailDownloader() {
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 mb-3">
               <Zap size={20} />
             </div>
-            <h3 className="text-white font-bold text-sm mb-1.5">⚡ Instant Preview & Download</h3>
+            <h3 className="text-white font-bold text-sm mb-1.5">Instant Preview & Download</h3>
             <p className="text-slate-400 text-xs leading-relaxed">
               No server delays or waiting. Thumbnails load immediately from YouTube's direct CDN.
             </p>
@@ -303,7 +303,7 @@ export default function ThumbnailDownloader() {
             <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 mb-3">
               <Layers size={20} />
             </div>
-            <h3 className="text-white font-bold text-sm mb-1.5">🎯 All Resolutions (1080p, 720p)</h3>
+            <h3 className="text-white font-bold text-sm mb-1.5">All Resolutions (1080p, 720p)</h3>
             <p className="text-slate-400 text-xs leading-relaxed">
               Download Full HD (1920x1080), High (640x480), Standard, and Medium quality images.
             </p>
@@ -312,7 +312,7 @@ export default function ThumbnailDownloader() {
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 mb-3">
               <Smartphone size={20} />
             </div>
-            <h3 className="text-white font-bold text-sm mb-1.5">📱 Mobile & Desktop</h3>
+            <h3 className="text-white font-bold text-sm mb-1.5">Mobile & Desktop</h3>
             <p className="text-slate-400 text-xs leading-relaxed">
               Works smoothly on Android, iPhone, iPad, Windows, and Mac with zero software needed.
             </p>

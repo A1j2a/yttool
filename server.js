@@ -14,6 +14,42 @@ const require = createRequire(import.meta.url)
 const ffmpegStatic = require('ffmpeg-static')
 const FFMPEG = ffmpegStatic || '/opt/homebrew/bin/ffmpeg'
 
+// Ensure Homebrew and standard bin directories are prioritized in PATH
+const extraPaths = ['/opt/homebrew/bin', '/opt/homebrew/sbin', '/usr/local/bin', '/usr/bin', '/bin']
+process.env.PATH = Array.from(new Set([...extraPaths, ...(process.env.PATH ? process.env.PATH.split(':') : [])])).join(':')
+
+// Auto-detect Python 3.11+ binary (required by latest yt-dlp)
+function resolvePython() {
+  const candidates = [
+    '/opt/homebrew/bin/python3',
+    '/opt/homebrew/bin/python3.14',
+    '/opt/homebrew/bin/python3.13',
+    '/opt/homebrew/bin/python3.12',
+    '/opt/homebrew/bin/python3.11',
+    '/usr/local/bin/python3',
+    'python3',
+  ]
+  for (const c of candidates) {
+    try {
+      const out = execSync(`"${c}" -c "import sys; print(sys.version_info >= (3, 11))"`, { encoding: 'utf8' }).trim()
+      if (out === 'True') return c
+    } catch { /* continue */ }
+  }
+  return null
+}
+
+function isScript(filePath) {
+  try {
+    const fd = fs.openSync(filePath, 'r')
+    const buf = Buffer.alloc(2)
+    fs.readSync(fd, buf, 0, 2, 0)
+    fs.closeSync(fd)
+    return buf.toString() === '#!'
+  } catch {
+    return false
+  }
+}
+
 // Auto-detect yt-dlp binary across common locations
 function resolveYtDlp() {
   if (process.env.YTDLP_PATH && fs.existsSync(process.env.YTDLP_PATH)) {
@@ -21,7 +57,7 @@ function resolveYtDlp() {
   }
   const localBin = path.join(process.cwd(), 'yt-dlp')
   if (fs.existsSync(localBin)) {
-    try { fs.chmodSync(localBin, 0o755) } catch {}
+    try { fs.chmodSync(localBin, 0o755) } catch { }
     return localBin
   }
   const candidates = [
@@ -52,10 +88,20 @@ function resolveYtDlp() {
 }
 
 const YTDLP = resolveYtDlp()
+const PYTHON_BIN = resolvePython()
 console.log(`[Init] Using YTDLP at: ${YTDLP}`)
+console.log(`[Init] Using Python at: ${PYTHON_BIN || 'system default'}`)
 console.log(`[Init] Using FFMPEG at: ${FFMPEG}`)
 
-const app  = express()
+function spawnYtDlp(args, options = {}) {
+  const env = { ...process.env, ...options.env }
+  if (PYTHON_BIN && isScript(YTDLP)) {
+    return spawn(PYTHON_BIN, [YTDLP, ...args], { ...options, env })
+  }
+  return spawn(YTDLP, args, { ...options, env })
+}
+
+const app = express()
 const PORT = process.env.PORT || 3001
 const isProd = process.env.NODE_ENV === 'production'
 
@@ -63,6 +109,8 @@ const isProd = process.env.NODE_ENV === 'production'
 const ALLOWED_ORIGINS = [
   'http://localhost:5173',
   'http://localhost:4173',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:4173',
   'https://yttune.app',
   'https://www.yttune.app',
   'https://yttune.vercel.app',
@@ -125,9 +173,6 @@ function getCookieArgs() {
 function getYtDlpCommonArgs() {
   const cookieArgs = getCookieArgs()
   const baseArgs = [
-    '--js-runtimes', 'node',
-    '--remote-components', 'ejs:github',
-    '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     '--no-check-certificates',
   ]
   if (cookieArgs.length > 0) {
@@ -137,10 +182,7 @@ function getYtDlpCommonArgs() {
       ...baseArgs,
     ]
   }
-  return [
-    '--extractor-args', 'youtube:player_client=android,mweb,tv_embedded',
-    ...baseArgs,
-  ]
+  return baseArgs
 }
 
 // ── shared: get video info fast (oEmbed first ~50ms, yt-dlp fallback) ─────────
@@ -171,7 +213,7 @@ async function getVideoInfo(url) {
       '--',
       url
     ]
-    const proc = spawn(YTDLP, args)
+    const proc = spawnYtDlp(args)
     let out = ''
     let errOut = ''
     const timer = setTimeout(() => {
@@ -209,7 +251,7 @@ app.get('/api/mp3', async (req, res) => {
     const safeTitle = (title || 'audio').replace(/[^a-z0-9]/gi, '_').toLowerCase()
 
     await new Promise((resolve, reject) => {
-      const ytProc = spawn(YTDLP, [
+      const ytProc = spawnYtDlp([
         '--ffmpeg-location', FFMPEG,
         ...getYtDlpCommonArgs(),
         '--concurrent-fragments', '3',
@@ -254,12 +296,12 @@ app.get('/api/mp3', async (req, res) => {
 
     const stream = fs.createReadStream(tmpFile)
     stream.pipe(res)
-    stream.on('end', () => fs.unlink(tmpFile, () => {}))
-    stream.on('error', () => fs.unlink(tmpFile, () => {}))
-    res.on('close', () => fs.unlink(tmpFile, () => {}))
+    stream.on('end', () => fs.unlink(tmpFile, () => { }))
+    stream.on('error', () => fs.unlink(tmpFile, () => { }))
+    res.on('close', () => fs.unlink(tmpFile, () => { }))
   } catch (e) {
     console.error('[mp3]', e.message)
-    if (fs.existsSync(tmpFile)) fs.unlink(tmpFile, () => {})
+    if (fs.existsSync(tmpFile)) fs.unlink(tmpFile, () => { })
     if (!res.headersSent) res.status(502).json({ error: e.message || 'Failed to convert audio' })
   }
 })
@@ -286,7 +328,7 @@ app.get('/api/mp4', async (req, res) => {
     const format = `bv*[height<=${safeRes}][ext=mp4]+ba[ext=m4a]/bv*[height<=${safeRes}]+ba/best[height<=${safeRes}]/best`
 
     await new Promise((resolve, reject) => {
-      const ytProc = spawn(YTDLP, [
+      const ytProc = spawnYtDlp([
         '--ffmpeg-location', FFMPEG,
         ...getYtDlpCommonArgs(),
         '--concurrent-fragments', '3',
@@ -329,12 +371,12 @@ app.get('/api/mp4', async (req, res) => {
 
     const stream = fs.createReadStream(tmpFile)
     stream.pipe(res)
-    stream.on('end', () => fs.unlink(tmpFile, () => {}))
-    stream.on('error', () => fs.unlink(tmpFile, () => {}))
-    res.on('close', () => fs.unlink(tmpFile, () => {}))
+    stream.on('end', () => fs.unlink(tmpFile, () => { }))
+    stream.on('error', () => fs.unlink(tmpFile, () => { }))
+    res.on('close', () => fs.unlink(tmpFile, () => { }))
   } catch (e) {
     console.error('[mp4]', e.message)
-    if (fs.existsSync(tmpFile)) fs.unlink(tmpFile, () => {})
+    if (fs.existsSync(tmpFile)) fs.unlink(tmpFile, () => { })
     if (!res.headersSent) res.status(502).json({ error: e.message || 'Failed to download video' })
   }
 })
@@ -353,7 +395,7 @@ async function fetchTranscript(videoId) {
     const xmlRes = await fetch(track.baseUrl, { signal: AbortSignal.timeout(10000) })
     const xml = await xmlRes.text()
     return [...xml.matchAll(/<text[^>]*>([^<]*)<\/text>/g)]
-      .map(m => m[1].replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>'))
+      .map(m => m[1].replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>'))
       .join(' ')
   } catch {
     return 'Transcript not available for this video.'
@@ -422,6 +464,6 @@ app.use((_, res) => res.status(404).json({ error: 'Not found' }))
 app.listen(PORT, () => console.log(`Server running on port ${PORT} [${isProd ? 'production' : 'development'}]`))
 
 process.on('SIGTERM', () => process.exit(0))
-process.on('SIGINT',  () => process.exit(0))
-process.on('uncaughtException',  (e) => console.error('Uncaught:', e.message))
+process.on('SIGINT', () => process.exit(0))
+process.on('uncaughtException', (e) => console.error('Uncaught:', e.message))
 process.on('unhandledRejection', (e) => console.error('Unhandled:', e))

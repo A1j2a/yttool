@@ -7,7 +7,7 @@ import { Mail, CheckCircle, AlertCircle } from "lucide-react";
 import { useToast } from "../hooks/useToast";
 import Toast from "../components/Toast";
 
-// ✅ EmailJS credentials from .env
+// EmailJS credentials from .env
 const EMAILJS_SERVICE_ID  = import.meta.env.VITE_EMAILJS_SERVICE_ID
 const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
 const EMAILJS_PUBLIC_KEY  = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
@@ -87,7 +87,12 @@ export default function Contact() {
     } catch (err) {
       console.error('EmailJS error:', err)
       setStatus('idle')
-      addToast(err?.text || err?.message || 'Failed to send. Please try again.', 'error')
+      const rawError = err?.text || err?.message || ''
+      if (rawError.includes('Gmail_API') || rawError.includes('Invalid grant')) {
+        addToast('Email service connection issue. Please reconnect Gmail in EmailJS dashboard.', 'error')
+      } else {
+        addToast(rawError || 'Failed to send. Please try again.', 'error')
+      }
     }
   };
 

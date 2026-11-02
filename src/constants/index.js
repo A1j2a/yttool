@@ -74,219 +74,118 @@ export const CATEGORIES = [
   "All",
   "Audio",
   "Video",
-  "AI",
-  "Download",
   "Image",
-  "Document",
-  "Utility",
-  "Design",
-  "Dev",
+  "AI",
 ];
 
 export const FEATURES = [
   {
     icon: "Zap",
-    title: "Lightning Fast",
-    desc: "Process media in seconds with our optimized cloud infrastructure.",
+    title: "Instant Cloud Processing",
+    desc: "Direct stream extraction processes your media in seconds without waiting in long queues.",
   },
   {
     icon: "Shield",
-    title: "Privacy First",
-    desc: "Your files are never stored. All processing happens in real-time.",
+    title: "Privacy & Zero Logging",
+    desc: "Files are converted on-the-fly and immediately removed. We never store your downloads or history.",
   },
   {
-    icon: "Globe",
-    title: "1000+ Sources",
-    desc: "Download from YouTube, Vimeo, TikTok, Instagram, and more.",
+    icon: "Headphones",
+    title: "High-Fidelity Audio",
+    desc: "Extract clean MP3 audio up to 320 kbps with embedded video title and thumbnail metadata.",
   },
   {
-    icon: "Cpu",
-    title: "AI Powered",
-    desc: "Advanced AI models for script generation and content creation.",
+    icon: "Video",
+    title: "Full HD Video & Shorts",
+    desc: "Download videos and vertical YouTube Shorts in crisp 1080p and 720p MP4 without watermarks.",
   },
   {
-    icon: "Layers",
-    title: "50+ Tools",
-    desc: "Everything you need in one unified platform.",
+    icon: "Smartphone",
+    title: "Cross-Device Compatibility",
+    desc: "Works natively in your browser across Android, iPhone, iPad, Mac, and Windows with no apps required.",
   },
   {
-    icon: "RefreshCw",
-    title: "Always Updated",
-    desc: "New tools added weekly based on community requests.",
+    icon: "Sparkles",
+    title: "AI Script Extraction",
+    desc: "Grab complete video transcripts, descriptions, and SEO tags with one click for research and remixing.",
   },
 ];
 
 export const STATS = [
-  { value: "12M+", label: "Files Processed" },
-  { value: "850K+", label: "Active Users" },
-  { value: "3", label: "Free Tools" },
-  { value: "99.9%", label: "Uptime" },
-];
-
-export const PRICING = [
-  {
-    name: "Free",
-    price: "$0",
-    period: "forever",
-    color: "#00f5ff",
-    features: [
-      "5 conversions/day",
-      "720p max quality",
-      "10 AI script credits",
-      "Basic tools access",
-      "Community support",
-    ],
-    cta: "Get Started",
-    popular: false,
-  },
-  {
-    name: "Pro",
-    price: "$12",
-    period: "/month",
-    color: "#bf00ff",
-    features: [
-      "Unlimited conversions",
-      "4K quality downloads",
-      "500 AI script credits",
-      "All 50+ tools",
-      "Priority support",
-      "No watermarks",
-      "API access",
-    ],
-    cta: "Start Pro Trial",
-    popular: true,
-  },
-  {
-    name: "Enterprise",
-    price: "$49",
-    period: "/month",
-    color: "#ff0080",
-    features: [
-      "Everything in Pro",
-      "Team workspace",
-      "Custom integrations",
-      "Dedicated support",
-      "SLA guarantee",
-      "White-label option",
-      "Unlimited API calls",
-    ],
-    cta: "Contact Sales",
-    popular: false,
-  },
+  { value: "320 kbps", label: "Max Audio Fidelity" },
+  { value: "1080p FHD", label: "Video Resolution" },
+  { value: "100% Free", label: "No Signup Required" },
+  { value: "Zero", label: "Watermarks Added" },
 ];
 
 export const TESTIMONIALS = [
   {
-    name: "Sarah Chen",
+    name: "Devin Ross",
+    role: "Video Editor",
+    avatar: "DR",
+    text: "The audio extraction is clean and preserves 320kbps fidelity. It cut down sample hunting time significantly.",
+    rating: 5,
+  },
+  {
+    name: "Amina Yusuf",
     role: "Content Creator",
-    avatar: "SC",
-    text: "YTTune completely changed my workflow. I save 3+ hours every week just on video conversions alone.",
+    avatar: "AY",
+    text: "Downloading Shorts and grabbing accurate transcripts for translation takes seconds. Exactly what I needed.",
     rating: 5,
   },
   {
-    name: "Marcus Rivera",
-    role: "YouTuber",
-    avatar: "MR",
-    text: "The AI script generator is insane. It writes better hooks than I do. My views went up 40% in a month.",
+    name: "Carlos Mendez",
+    role: "Podcast Producer",
+    avatar: "CM",
+    text: "No annoying redirects, no ads cluttering the page, and fast conversions. Clean and dependable utility.",
     rating: 5,
   },
   {
-    name: "Priya Sharma",
+    name: "Rohan Patel",
     role: "Digital Marketer",
-    avatar: "PS",
-    text: "Having 50+ tools in one place is a game changer. No more juggling 10 different subscriptions.",
-    rating: 5,
-  },
-  {
-    name: "Jake Thompson",
-    role: "Podcast Host",
-    avatar: "JT",
-    text: "The MP3 converter quality is unmatched. Crystal clear audio every single time.",
+    avatar: "RP",
+    text: "Extracting video tags and descriptions directly into my workflow saves me so much research time.",
     rating: 5,
   },
 ];
 
 export const FAQS = [
   {
-    q: "Is YTTune really free to use?",
-    a: "Yes! YTTune is completely free. No signup, no hidden charges — convert and download as much as you want.",
+    q: "Is YTTune completely free to use?",
+    a: "Yes. YTTune is 100% free with no account creation, no subscription plans, and no hidden fees.",
   },
   {
-    q: "Which video platforms are supported?",
-    a: "We support 1000+ platforms including YouTube, Vimeo, TikTok, Instagram, Twitter, Facebook, Dailymotion, and many more.",
+    q: "What types of YouTube content are supported?",
+    a: "You can convert standard YouTube videos, YouTube Shorts, music tracks, and podcast episodes using any valid public YouTube link.",
   },
   {
-    q: "Are my files stored on your servers?",
-    a: "Never. All processing is done in real-time and files are immediately discarded after conversion. Your privacy is our priority.",
+    q: "Are downloaded files stored on your servers?",
+    a: "No. Conversion occurs in temporary memory, streamed straight to your browser, and deleted immediately after the download starts.",
   },
   {
-    q: "What quality options are available?",
-    a: "Free users get up to 720p. Pro users get up to 4K resolution for video and 320kbps for audio.",
+    q: "What quality formats can I choose from?",
+    a: "For audio, you can download MP3s up to 320 kbps. For video, resolutions include 1080p Full HD, 720p HD, and 480p standard quality.",
   },
   {
-    q: "Can I use YTTune for commercial projects?",
-    a: "Pro and Enterprise plans include commercial usage rights. Please review our terms for specific use cases.",
+    q: "Does YTTune add watermarks to downloaded videos?",
+    a: "Never. All downloaded MP4 files and converted MP3 tracks are clean and retain the original quality without branding.",
   },
   {
-    q: "How does the AI script generator work?",
-    a: "Our AI uses advanced language models to generate scripts based on your topic, tone, and length preferences.",
+    q: "How does the AI Script / Transcript tool work?",
+    a: "It extracts the official closed captions, timestamps, description, and metadata directly from the video so you can read, copy, or repurpose the content.",
   },
-];
-
-export const TEAM = [
-  {
-    name: "Alex Nova",
-    role: "CEO & Founder",
-    avatar: "AN",
-    bio: "Former Google engineer with 10+ years in media tech.",
-  },
-  {
-    name: "Luna Park",
-    role: "CTO",
-    avatar: "LP",
-    bio: "AI researcher and full-stack architect.",
-  },
-  {
-    name: "Kai Osei",
-    role: "Head of Design",
-    avatar: "KO",
-    bio: "Award-winning UX designer from Berlin.",
-  },
-  {
-    name: "Zara Mills",
-    role: "Head of AI",
-    avatar: "ZM",
-    bio: "PhD in Machine Learning from MIT.",
-  },
-];
-
-export const AI_TONES = [
-  "Professional",
-  "Casual",
-  "Humorous",
-  "Inspirational",
-  "Educational",
-  "Persuasive",
-];
-export const AI_TYPES = [
-  "YouTube Script",
-  "Blog Post",
-  "Ad Copy",
-  "Social Caption",
-  "Email Newsletter",
-  "Product Description",
 ];
 
 export const AUDIO_QUALITIES = [
   "128 kbps",
   "192 kbps",
   "256 kbps",
-  "320 kbps (Pro)",
+  "320 kbps",
 ];
+
 export const VIDEO_RESOLUTIONS = [
   "360p",
   "480p",
   "720p HD",
   "1080p FHD",
-  "4K UHD (Pro)",
 ];

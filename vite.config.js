@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => {
     plugins: [react(), tailwindcss()],
 
     server: {
+      host: '0.0.0.0',
       proxy: { '/api': env.VITE_API_URL || 'https://yttool-r6ge.onrender.com' },
     },
 

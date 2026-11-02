@@ -28,14 +28,14 @@ export default function Tools() {
           className="text-center mb-12"
         >
           <h1 className="text-4xl sm:text-5xl font-black text-white mb-4">
-            All <span className="neon-text">Tools</span>
+            Creator <span className="neon-text">Tools</span>
           </h1>
-          <p className="text-slate-500 max-w-xl mx-auto">50+ premium tools for creators, developers, and marketers.</p>
+          <p className="text-slate-400 max-w-xl mx-auto">High-speed utilities for downloading audio, video, Shorts, thumbnails, and transcripts.</p>
         </motion.div>
 
         {/* Search */}
         <div className="max-w-xl mx-auto mb-8">
-          <SearchBar value={search} onChange={setSearch} placeholder="Search 50+ tools..." />
+          <SearchBar value={search} onChange={setSearch} placeholder="Search tools..." />
         </div>
 
         {/* Category Tabs */}

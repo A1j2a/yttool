@@ -412,7 +412,7 @@ export default function MP3Converter() {
             </div>
             <div className="mt-4 pt-3 border-t border-white/5 flex items-center gap-2 text-cyan-400 text-xs font-medium bg-cyan-500/10 px-3 py-2 rounded-xl">
               <Download size={14} className="animate-bounce flex-shrink-0" />
-              <span>Conversion complete hote hi audio file aapki device me automatically download ho jayegi.</span>
+              <span>Your audio file will automatically download to your device once conversion is complete.</span>
             </div>
           </motion.div>
         )}
@@ -500,15 +500,15 @@ export default function MP3Converter() {
           {/* Features Grid */}
           <div className="grid sm:grid-cols-3 gap-4">
             <div className="glass rounded-xl p-5 border border-white/10">
-              <h3 className="text-white font-bold mb-2">⚡ Ultra-Fast Conversion</h3>
+              <h3 className="text-white font-bold mb-2">Ultra-Fast Conversion</h3>
               <p className="text-slate-400 text-xs leading-relaxed">High-speed cloud processing converts YouTube videos to MP3 in mere seconds.</p>
             </div>
             <div className="glass rounded-xl p-5 border border-white/10">
-              <h3 className="text-white font-bold mb-2">🎧 Up to 320 kbps HD Audio</h3>
+              <h3 className="text-white font-bold mb-2">Up to 320 kbps HD Audio</h3>
               <p className="text-slate-400 text-xs leading-relaxed">Choose from 128kbps, 192kbps, 256kbps, and maximum fidelity 320kbps MP3.</p>
             </div>
             <div className="glass rounded-xl p-5 border border-white/10">
-              <h3 className="text-white font-bold mb-2">📱 All Devices Supported</h3>
+              <h3 className="text-white font-bold mb-2">All Devices Supported</h3>
               <p className="text-slate-400 text-xs leading-relaxed">Seamlessly download on iPhone, Android, Mac, Windows, Linux, and tablets.</p>
             </div>
           </div>

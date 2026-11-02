@@ -547,7 +547,7 @@ export default function MP4Converter() {
             </div>
             <div className="mt-4 pt-3 border-t border-white/5 flex items-center gap-2 text-purple-400 text-xs font-medium bg-purple-500/10 px-3 py-2 rounded-xl">
               <Download size={14} className="animate-bounce flex-shrink-0" />
-              <span>Conversion complete hote hi video file aapki device me automatically download ho jayegi.</span>
+              <span>Your video file will automatically download to your device once conversion is complete.</span>
             </div>
           </motion.div>
         )}
@@ -644,15 +644,15 @@ export default function MP4Converter() {
           {/* Features Grid */}
           <div className="grid sm:grid-cols-3 gap-4">
             <div className="glass rounded-xl p-5 border border-white/10">
-              <h3 className="text-white font-bold mb-2">🎬 1080p Full HD Video</h3>
+              <h3 className="text-white font-bold mb-2">1080p Full HD Video</h3>
               <p className="text-slate-400 text-xs leading-relaxed">Save videos in crisp 1080p FHD and 720p HD with synced audio.</p>
             </div>
             <div className="glass rounded-xl p-5 border border-white/10">
-              <h3 className="text-white font-bold mb-2">⚡ No Speed Limits</h3>
+              <h3 className="text-white font-bold mb-2">No Speed Limits</h3>
               <p className="text-slate-400 text-xs leading-relaxed">Enjoy direct, unrestricted download speeds directly from our fast servers.</p>
             </div>
             <div className="glass rounded-xl p-5 border border-white/10">
-              <h3 className="text-white font-bold mb-2">📱 YouTube Shorts Ready</h3>
+              <h3 className="text-white font-bold mb-2">YouTube Shorts Ready</h3>
               <p className="text-slate-400 text-xs leading-relaxed">Save YouTube Shorts in vertical MP4 format without annoying watermarks.</p>
             </div>
           </div>

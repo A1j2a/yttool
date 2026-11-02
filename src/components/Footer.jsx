@@ -87,7 +87,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-slate-600 text-sm">© 2025 YTTune. All rights reserved.</p>
+          <p className="text-slate-600 text-sm">© {new Date().getFullYear()} YTTune. All rights reserved.</p>
           <p className="text-slate-600 text-sm flex items-center gap-1">
             Made with <Heart size={12} className="text-pink-500" /> for creators worldwide
           </p>

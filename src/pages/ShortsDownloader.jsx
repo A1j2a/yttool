@@ -17,6 +17,7 @@ import {
   Zap,
   Shield,
   Smartphone,
+  Check,
 } from "lucide-react";
 import { PageWrapper } from "../animations";
 import AnimatedButton from "../components/AnimatedButton";
@@ -292,7 +293,7 @@ export default function ShortsDownloader() {
             </div>
             <div className="mt-3 pt-3 border-t border-white/5 flex items-center gap-2 text-purple-400 text-xs font-medium bg-purple-500/10 px-3.5 py-2.5 rounded-xl">
               <Download size={15} className="animate-bounce flex-shrink-0" />
-              <span>Conversion complete hote hi Shorts file aapki device me automatically download ho jayegi.</span>
+              <span>Your Shorts file will automatically download to your device once conversion is complete.</span>
             </div>
           </motion.div>
         )}
@@ -331,7 +332,7 @@ export default function ShortsDownloader() {
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 mb-3">
               <Zap size={20} />
             </div>
-            <h3 className="text-white font-bold text-sm mb-1.5">⚡ Ultra Fast Download</h3>
+            <h3 className="text-white font-bold text-sm mb-1.5">Ultra Fast Download</h3>
             <p className="text-slate-400 text-xs leading-relaxed">
               Direct high-speed stream processing downloads any YouTube Shorts in just a few seconds.
             </p>
@@ -340,7 +341,7 @@ export default function ShortsDownloader() {
             <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center text-pink-400 mb-3">
               <Smartphone size={20} />
             </div>
-            <h3 className="text-white font-bold text-sm mb-1.5">📱 Mobile & PC Friendly</h3>
+            <h3 className="text-white font-bold text-sm mb-1.5">Mobile & PC Friendly</h3>
             <p className="text-slate-400 text-xs leading-relaxed">
               Works seamlessly on iOS Safari, Android, Mac, and Windows with zero software installation.
             </p>
@@ -349,7 +350,7 @@ export default function ShortsDownloader() {
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 mb-3">
               <Shield size={20} />
             </div>
-            <h3 className="text-white font-bold text-sm mb-1.5">🔒 Safe & No Watermark</h3>
+            <h3 className="text-white font-bold text-sm mb-1.5">Safe & Clean Output</h3>
             <p className="text-slate-400 text-xs leading-relaxed">
               Enjoy 100% clean video downloads without annoying logos, watermarks, or compression artifacts.
             </p>
@@ -386,12 +387,12 @@ export default function ShortsDownloader() {
               Why Choose YTTune for YouTube Shorts Download?
             </h2>
             <ul className="grid sm:grid-cols-2 gap-3 text-xs sm:text-sm text-slate-400">
-              <li className="flex items-center gap-2">✅ No registration, signup, or app download required</li>
-              <li className="flex items-center gap-2">✅ Full HD 1080p and 720p resolution support</li>
-              <li className="flex items-center gap-2">✅ Convert Shorts to 320kbps MP3 audio</li>
-              <li className="flex items-center gap-2">✅ Works on Android, iPhone, iPad, PC, and Mac</li>
-              <li className="flex items-center gap-2">✅ 100% free with unlimited daily downloads</li>
-              <li className="flex items-center gap-2">✅ No watermark added to video</li>
+              <li className="flex items-center gap-2"><Check size={16} className="text-pink-400 flex-shrink-0" /> No registration, signup, or app download required</li>
+              <li className="flex items-center gap-2"><Check size={16} className="text-pink-400 flex-shrink-0" /> Full HD 1080p and 720p resolution support</li>
+              <li className="flex items-center gap-2"><Check size={16} className="text-pink-400 flex-shrink-0" /> Convert Shorts to 320kbps MP3 audio</li>
+              <li className="flex items-center gap-2"><Check size={16} className="text-pink-400 flex-shrink-0" /> Works on Android, iPhone, iPad, PC, and Mac</li>
+              <li className="flex items-center gap-2"><Check size={16} className="text-pink-400 flex-shrink-0" /> 100% free with unlimited daily downloads</li>
+              <li className="flex items-center gap-2"><Check size={16} className="text-pink-400 flex-shrink-0" /> No watermark added to video</li>
             </ul>
           </div>
         </article>

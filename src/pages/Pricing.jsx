@@ -9,9 +9,9 @@ const COMPARISON = [
   { feature: 'Max video quality', free: '720p', pro: '4K', enterprise: '4K' },
   { feature: 'AI script credits', free: '10/mo', pro: '500/mo', enterprise: 'Unlimited' },
   { feature: 'Tools access', free: 'Basic', pro: 'All 50+', enterprise: 'All 50+' },
-  { feature: 'API access', free: '✗', pro: '✓', enterprise: '✓' },
-  { feature: 'Team workspace', free: '✗', pro: '✗', enterprise: '✓' },
-  { feature: 'White-label', free: '✗', pro: '✗', enterprise: '✓' },
+  { feature: 'API access', free: 'no', pro: 'yes', enterprise: 'yes' },
+  { feature: 'Team workspace', free: 'no', pro: 'no', enterprise: 'yes' },
+  { feature: 'White-label', free: 'no', pro: 'no', enterprise: 'yes' },
   { feature: 'Support', free: 'Community', pro: 'Priority', enterprise: 'Dedicated' },
 ]
 
@@ -54,9 +54,9 @@ export default function Pricing() {
                 <div className="p-4 text-slate-400 text-sm">{row.feature}</div>
                 {[row.free, row.pro, row.enterprise].map((val, j) => (
                   <div key={j} className="p-4 text-center text-sm">
-                    {val === '✓' ? (
+                    {val === 'yes' ? (
                       <Check size={16} className="text-green-400 mx-auto" />
-                    ) : val === '✗' ? (
+                    ) : val === 'no' ? (
                       <span className="text-slate-700">—</span>
                     ) : (
                       <span className="text-slate-300">{val}</span>
