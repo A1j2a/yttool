@@ -153,6 +153,42 @@ const isValidYouTubeUrl = (url) =>
   /^https?:\/\/(www\.)?(youtube\.com\/watch\?.*v=[\w-]{11}|youtu\.be\/[\w-]{11}|youtube\.com\/shorts\/[\w-]{11})/.test(url)
 
 // ── Anti-bot & Cookie Support ────────────────────────────────────────────────
+let autoCookiePath = null
+
+async function initAutoCookies() {
+  try {
+    const res = await fetch('https://www.youtube.com', {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      },
+      signal: AbortSignal.timeout(10000)
+    })
+    const setCookies = res.headers.getSetCookie ? res.headers.getSetCookie() : []
+    if (setCookies && setCookies.length > 0) {
+      let out = '# Netscape HTTP Cookie File\n'
+      for (const str of setCookies) {
+        const parts = str.split(';').map(p => p.trim())
+        const [name, val] = parts[0].split('=')
+        if (!name || !val) continue
+        const domain = '.youtube.com'
+        const path = '/'
+        const secure = 'TRUE'
+        const expires = Math.floor(Date.now() / 1000) + 31536000
+        out += `${domain}\tTRUE\t${path}\t${secure}\t${expires}\t${name}\t${val}\n`
+      }
+      const tmpPath = path.join(os.tmpdir(), 'yt_auto_cookies.txt')
+      fs.writeFileSync(tmpPath, out, 'utf8')
+      autoCookiePath = tmpPath
+      console.log(`[Cookies] Auto-generated fresh YouTube visitor cookies (${setCookies.length} cookies)`)
+    }
+  } catch (err) {
+    console.warn('[Cookies] Auto cookie generation skipped:', err.message)
+  }
+}
+
+// Auto-generate fresh visitor cookies on startup
+initAutoCookies()
+
 function getCookieArgs() {
   const cookieFile = path.join(process.cwd(), 'cookies.txt')
   if (fs.existsSync(cookieFile)) {
@@ -167,16 +203,20 @@ function getCookieArgs() {
       console.error('[Cookies] Failed to write temp cookies:', e.message)
     }
   }
+  if (autoCookiePath && fs.existsSync(autoCookiePath)) {
+    return ['--cookies', autoCookiePath]
+  }
   return []
 }
 
 function getYtDlpCommonArgs() {
   const cookieArgs = getCookieArgs()
   const baseArgs = [
+    '-4',
     '--no-check-certificates',
+    '--rm-cache-dir',
   ]
   if (cookieArgs.length > 0) {
-    // When cookies are present, authenticate extraction without forcing restricted player_client
     return [
       ...cookieArgs,
       ...baseArgs,
@@ -447,12 +487,12 @@ app.get('/api/yt-info', async (req, res) => {
 app.get('/', (_, res) => res.json({
   status: 'ok',
   message: 'YTTune API Server is running',
-  cookies_active: Boolean(process.env.YOUTUBE_COOKIES || fs.existsSync(path.join(process.cwd(), 'cookies.txt'))),
+  cookies_active: Boolean(process.env.YOUTUBE_COOKIES || fs.existsSync(path.join(process.cwd(), 'cookies.txt')) || (autoCookiePath && fs.existsSync(autoCookiePath))),
   ts: Date.now()
 }))
 app.get('/health', (_, res) => res.json({
   status: 'ok',
-  cookies_active: Boolean(process.env.YOUTUBE_COOKIES || fs.existsSync(path.join(process.cwd(), 'cookies.txt'))),
+  cookies_active: Boolean(process.env.YOUTUBE_COOKIES || fs.existsSync(path.join(process.cwd(), 'cookies.txt')) || (autoCookiePath && fs.existsSync(autoCookiePath))),
   ts: Date.now()
 }))
 

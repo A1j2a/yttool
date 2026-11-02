@@ -270,9 +270,9 @@ export default function MP4Converter() {
   const canonicalUrl = 'https://yttune.vercel.app/mp4';
 
   useSEO({
-    title: 'YouTube Video Downloader - Download YouTube MP4 1080p, 720p HD | YTTune',
-    description: 'Free YouTube video downloader online. Download YouTube videos in MP4 (1080p Full HD, 720p, 480p) fast and free. Works on Android, iPhone, Windows, and Mac.',
-    keywords: 'youtube video download, youtube video mp3 mp4 download, youtube mp4 download, download youtube video, youtube video downloader, 1080p youtube video download, youtube shorts video download, youtube video downlod',
+    title: 'YouTube Video Downloader - Free YouTube Converter 1080p MP4 | YTTune',
+    description: 'Free YouTube converter & video downloader online. Download YouTube videos in MP4 (1080p Full HD, 720p, 480p) fast and free. Works on mobile & desktop.',
+    keywords: 'youtube converter, free youtube converter, yt converter, youtube video download, youtube video mp3 mp4 download, youtube mp4 download, download youtube video, youtube video downloader, 1080p youtube video download, yttune',
     canonical: canonicalUrl,
     schema: {
       '@context': 'https://schema.org',

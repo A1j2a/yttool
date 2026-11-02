@@ -38,9 +38,9 @@ export default function Landing() {
   }
 
   useSEO({
-    title: 'YouTube Video Downloader & Free YouTube MP3 Converter | YTTune',
-    description: 'Free online YouTube video downloader & MP3 converter. Download free YouTube MP3 audio (320kbps) & MP4 HD videos fast with no software or signup.',
-    keywords: 'free youtube mp3, youtube free mp3, free youtube mp3 download, youtube mp3 download, free youtube downloader mp3, youtube video mp3 mp4 download, youtube video download, youtube mp3 dowland, youtube mp3 indir, youtube to mp3, youtube to mp4, yt mp3 converter',
+    title: 'YouTube Converter - Fast YouTube to MP3 & MP4 Converter | YTTune',
+    description: 'Free YouTube converter & MP3 downloader. Convert YouTube to MP3 in 320kbps HD audio and download 1080p MP4 videos fast. Fast YT to MP3 online with no signup.',
+    keywords: 'youtube converter, youtube to mp3 converter, youtube mp3 converter, youtube to mp3, yt to mp3, free youtube converter, mp3 converter youtube, yt converter, yt to mp3 converter, youtube to mp3 free, convert youtube to mp3, free youtube mp3, youtube mp3 download, free youtube downloader mp3, youtube video mp3 mp4 download, youtube video download, youtube to mp4, yt mp3 converter, yttune',
     canonical: 'https://yttune.vercel.app/',
     schema: {
       '@context': 'https://schema.org',
@@ -98,10 +98,9 @@ export default function Landing() {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="text-5xl sm:text-6xl lg:text-7xl font-black text-white leading-tight mb-6"
           >
-            Convert. Download.{' '}
-            <span className="neon-text">Free.</span>
+            YouTube <span className="neon-text">Converter</span>
             <br />
-            <span className="text-slate-400 text-4xl sm:text-5xl lg:text-6xl font-bold">No Limits. No Cost.</span>
+            <span className="text-slate-400 text-3xl sm:text-4xl lg:text-5xl font-bold">Fast YouTube to MP3 &amp; MP4</span>
           </motion.h1>
 
           <motion.p
@@ -449,10 +448,10 @@ export default function Landing() {
         <div className="max-w-4xl mx-auto space-y-12">
           <div>
             <h2 className="text-3xl font-bold text-white mb-4">
-              YouTube Video MP3 MP4 Download — 100% Free Online Converter
+              YouTube Converter — Free YouTube to MP3 &amp; MP4 Downloader
             </h2>
             <p className="text-slate-300 leading-relaxed mb-4">
-              Looking for a reliable way to perform <strong className="text-white">YouTube video MP3 MP4 download</strong> without installing heavy desktop software or registering an account? <strong className="text-cyan-400">YTTune</strong> provides an ultra-fast, cloud-powered YouTube downloader and converter that lets you save YouTube videos in crystal-clear MP4 (up to 1080p Full HD) or extract studio-grade MP3 audio (up to 320kbps) in seconds.
+              Looking for a reliable <strong className="text-white">YouTube converter</strong> to perform high-speed <strong className="text-white">YouTube to MP3</strong> or <strong className="text-white">YT to MP3</strong> conversion without installing desktop software or registering an account? <strong className="text-cyan-400">YTTune</strong> provides an ultra-fast, cloud-powered online YouTube converter that lets you save YouTube videos in crystal-clear MP4 (up to 1080p Full HD) or extract studio-grade MP3 audio (up to 320kbps) in seconds.
             </p>
             <p className="text-slate-400 leading-relaxed text-sm">
               Whether you are looking to download YouTube videos for offline viewing on your mobile device, convert a podcast into an MP3 soundtrack, or grab high-framerate YouTube Shorts clips, YTTune is optimized for Android, iPhone (iOS), iPad, Windows, and Mac browsers.

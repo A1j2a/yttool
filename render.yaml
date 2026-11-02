@@ -3,7 +3,7 @@ services:
     name: yttune-api
     env: node
     plan: free
-    buildCommand: npm install && curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ./yt-dlp && chmod +x ./yt-dlp
+    buildCommand: npm install && curl -L https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/yt-dlp -o ./yt-dlp && chmod +x ./yt-dlp
     startCommand: npm start
     envVars:
       - key: NODE_ENV
@@ -11,4 +11,4 @@ services:
       - key: PORT
         value: 3001
       - key: FRONTEND_URL
-        value: https://yttune.app
+        value: https://yttune.vercel.app

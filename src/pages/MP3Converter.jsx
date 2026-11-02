@@ -189,9 +189,9 @@ export default function MP3Converter() {
   const canonicalUrl = 'https://yttune.vercel.app/mp3';
 
   useSEO({
-    title: 'Free YouTube to MP3 Converter - Fast YouTube MP3 Download (320kbps) | YTTune',
-    description: 'Free YouTube to MP3 converter & downloader. Convert and download free YouTube MP3 audio in 320kbps HD quality fast. 100% free, no software, works on mobile & PC.',
-    keywords: 'free youtube mp3, youtube free mp3, youtube mp3 download, free youtube mp3 download, free youtube downloader mp3, youtube to mp3, youtube mp3 dowland, youtube mp3 indir, free youtube indir, free download youtube, convert youtube to mp3, yt mp3',
+    title: 'YouTube to MP3 Converter - Free YT to MP3 (320kbps) | YTTune',
+    description: 'Free YouTube to MP3 converter & downloader. Convert YouTube to MP3 in 320kbps HD audio fast. Fast YT to MP3 converter online — 100% free with no signup.',
+    keywords: 'youtube to mp3 converter, youtube mp3 converter, youtube to mp3, yt to mp3, yt to mp3 converter, youtube to mp3 free, mp3 converter youtube, youtube converter mp3, free youtube mp3, youtube mp3 download, convert youtube to mp3, free youtube downloader mp3, yt mp3, yttune',
     canonical: canonicalUrl,
     schema: {
       '@context': 'https://schema.org',
@@ -308,9 +308,9 @@ export default function MP3Converter() {
             <Music size={28} className="text-cyan-400" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-black text-white mb-3">
-            Free YouTube to <span className="neon-text">MP3 Converter</span>
+            YouTube to <span className="neon-text">MP3 Converter</span>
           </h1>
-          <p className="text-slate-400 text-sm sm:text-base max-w-xl mx-auto">Fast, free YouTube video MP3 download in studio quality (up to 320 kbps). Unlimited conversions, no software or signup required.</p>
+          <p className="text-slate-400 text-sm sm:text-base max-w-xl mx-auto">Fast YT to MP3 audio conversion in studio quality (up to 320 kbps). 100% free with no software or signup required.</p>
         </motion.div>
 
         {/* Format Switcher Tabs */}
