@@ -235,20 +235,24 @@ function getCookieArgs() {
   return []
 }
 
-function getYtDlpCommonArgs() {
-  const cookieArgs = getCookieArgs()
+function getYtDlpCommonArgs(useCookies = false) {
   const baseArgs = [
     '-4',
     '--no-check-certificates',
     '--rm-cache-dir',
   ]
-  if (cookieArgs.length > 0) {
+  if (useCookies) {
+    const cookieArgs = getCookieArgs()
     return [
       ...cookieArgs,
       ...baseArgs,
     ]
   }
-  return baseArgs
+  // visionos & android clients bypass Google datacenter bot-detection and 429 errors completely
+  return [
+    '--extractor-args', 'youtube:player_client=visionos,android',
+    ...baseArgs,
+  ]
 }
 
 // ── shared: get video info fast (oEmbed first ~50ms, yt-dlp fallback) ─────────
@@ -270,36 +274,81 @@ async function getVideoInfo(url) {
     // fallback to yt-dlp below
   }
 
-  // 2. Fallback to yt-dlp with timeout
-  return new Promise((resolve, reject) => {
-    const args = [
-      ...getYtDlpCommonArgs(),
-      '--print', '%(title)s\n%(thumbnail)s',
-      '--no-playlist',
-      '--',
-      url
-    ]
-    const proc = spawnYtDlp(args)
-    let out = ''
-    let errOut = ''
-    const timer = setTimeout(() => {
-      proc.kill()
-      reject(new Error('yt-dlp info timed out'))
-    }, 12000)
+  // 2. Fallback to yt-dlp with timeout and automatic client retry
+  function fetchInfo(commonArgs) {
+    return new Promise((resolve, reject) => {
+      const args = [
+        ...commonArgs,
+        '--print', '%(title)s\n%(thumbnail)s',
+        '--no-playlist',
+        '--',
+        url
+      ]
+      const proc = spawnYtDlp(args)
+      let out = ''
+      let errOut = ''
+      const timer = setTimeout(() => {
+        proc.kill()
+        reject(new Error('yt-dlp info timed out'))
+      }, 15000)
 
-    proc.stdout.on('data', (d) => out += d)
-    proc.stderr.on('data', (d) => errOut += d)
-    proc.on('error', (err) => {
+      proc.stdout.on('data', (d) => out += d)
+      proc.stderr.on('data', (d) => errOut += d)
+      proc.on('error', (err) => {
+        clearTimeout(timer)
+        reject(err)
+      })
+      proc.on('close', (code) => {
+        clearTimeout(timer)
+        if (code !== 0) return reject(new Error(errOut.trim() || 'yt-dlp info failed'))
+        const [title = 'Track', thumb = ''] = out.trim().split('\n')
+        resolve({ title, thumb })
+      })
+    })
+  }
+
+  try {
+    return await fetchInfo(getYtDlpCommonArgs(false))
+  } catch (err) {
+    console.warn('[getVideoInfo] Primary visionos failed:', err.message, 'Retrying with fallback...')
+    return await fetchInfo(getYtDlpCommonArgs(true))
+  }
+}
+
+function executeSpawn(args, tmpFile, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const ytProc = spawnYtDlp(args)
+    let errBuf = ''
+    const timer = setTimeout(() => {
+      ytProc.kill('SIGKILL')
+      reject(new Error('Conversion timed out'))
+    }, timeoutMs)
+
+    ytProc.stderr.on('data', (d) => errBuf += d)
+    ytProc.on('error', (err) => {
       clearTimeout(timer)
       reject(err)
     })
-    proc.on('close', (code) => {
+    ytProc.on('close', (code) => {
       clearTimeout(timer)
-      if (code !== 0) return reject(new Error(errOut.trim() || 'yt-dlp info failed'))
-      const [title = 'Track', thumb = ''] = out.trim().split('\n')
-      resolve({ title, thumb })
+      if (code === 0 && fs.existsSync(tmpFile) && fs.statSync(tmpFile).size > 1000) {
+        resolve()
+      } else {
+        reject(new Error(errBuf.slice(-300) || 'Extraction failed'))
+      }
     })
   })
+}
+
+async function runYtDlpDownload(makeArgs, tmpFile, timeoutMs = 120000) {
+  try {
+    // Attempt 1: VisionOS & Android clients (bypasses Google bot challenges)
+    await executeSpawn(makeArgs(getYtDlpCommonArgs(false)), tmpFile, timeoutMs)
+  } catch (err) {
+    console.warn('[yt-dlp] Primary attempt failed:', err.message, 'Retrying with secondary client...')
+    // Attempt 2: Cookie/default fallback
+    await executeSpawn(makeArgs(getYtDlpCommonArgs(true)), tmpFile, timeoutMs)
+  }
 }
 
 // ── MP3: yt-dlp → mp3 conversion with verified file output ───────────────────
@@ -316,41 +365,19 @@ app.get('/api/mp3', async (req, res) => {
     const { title, thumb } = await getVideoInfo(decoded)
     const safeTitle = (title || 'audio').replace(/[^a-z0-9]/gi, '_').toLowerCase()
 
-    await new Promise((resolve, reject) => {
-      const ytProc = spawnYtDlp([
-        '--ffmpeg-location', FFMPEG,
-        ...getYtDlpCommonArgs(),
-        '--concurrent-fragments', '3',
-        '-f', 'ba/b',
-        '-x',
-        '--audio-format', 'mp3',
-        '--audio-quality', '4',
-        '--no-playlist',
-        '-o', tmpFile,
-        '--',
-        decoded
-      ])
-
-      let errBuf = ''
-      const timer = setTimeout(() => {
-        ytProc.kill('SIGKILL')
-        reject(new Error('Conversion timed out'))
-      }, 120000) // 2 min max
-
-      ytProc.stderr.on('data', (d) => errBuf += d)
-      ytProc.on('error', (err) => {
-        clearTimeout(timer)
-        reject(err)
-      })
-      ytProc.on('close', (code) => {
-        clearTimeout(timer)
-        if (code === 0 && fs.existsSync(tmpFile) && fs.statSync(tmpFile).size > 1000) {
-          resolve()
-        } else {
-          reject(new Error(errBuf.slice(-300) || 'Audio extraction failed'))
-        }
-      })
-    })
+    await runYtDlpDownload((commonArgs) => [
+      '--ffmpeg-location', FFMPEG,
+      ...commonArgs,
+      '--concurrent-fragments', '3',
+      '-f', 'ba/b',
+      '-x',
+      '--audio-format', 'mp3',
+      '--audio-quality', '4',
+      '--no-playlist',
+      '-o', tmpFile,
+      '--',
+      decoded
+    ], tmpFile, 120000)
 
     const stat = fs.statSync(tmpFile)
     res.setHeader('Content-Type', 'audio/mpeg')
@@ -393,39 +420,17 @@ app.get('/api/mp4', async (req, res) => {
 
     const format = `bv*[height<=${safeRes}][ext=mp4]+ba[ext=m4a]/bv*[height<=${safeRes}]+ba/best[height<=${safeRes}]/best`
 
-    await new Promise((resolve, reject) => {
-      const ytProc = spawnYtDlp([
-        '--ffmpeg-location', FFMPEG,
-        ...getYtDlpCommonArgs(),
-        '--concurrent-fragments', '3',
-        '-f', format,
-        '--no-playlist',
-        '--merge-output-format', 'mp4',
-        '-o', tmpFile,
-        '--',
-        decoded
-      ])
-
-      let errBuf = ''
-      const timer = setTimeout(() => {
-        ytProc.kill('SIGKILL')
-        reject(new Error('Download timed out'))
-      }, 180000) // 3 min max
-
-      ytProc.stderr.on('data', (d) => errBuf += d)
-      ytProc.on('error', (err) => {
-        clearTimeout(timer)
-        reject(err)
-      })
-      ytProc.on('close', (code) => {
-        clearTimeout(timer)
-        if (code === 0 && fs.existsSync(tmpFile) && fs.statSync(tmpFile).size > 1000) {
-          resolve()
-        } else {
-          reject(new Error(errBuf.slice(-300) || 'Video extraction failed'))
-        }
-      })
-    })
+    await runYtDlpDownload((commonArgs) => [
+      '--ffmpeg-location', FFMPEG,
+      ...commonArgs,
+      '--concurrent-fragments', '3',
+      '-f', format,
+      '--no-playlist',
+      '--merge-output-format', 'mp4',
+      '-o', tmpFile,
+      '--',
+      decoded
+    ], tmpFile, 180000)
 
     const stat = fs.statSync(tmpFile)
     res.setHeader('Content-Type', 'video/mp4')

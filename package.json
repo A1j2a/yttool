@@ -9,7 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "NODE_ENV=production node server.js",
-    "postinstall": "curl -L https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/yt-dlp -o ./yt-dlp && chmod +x ./yt-dlp",
+    "postinstall": "curl -L https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/yt-dlp -o ./yt-dlp && chmod +x ./yt-dlp && (curl -fsSL https://github.com/denoland/deno/releases/latest/download/deno-x86_64-unknown-linux-gnu.zip -o deno.zip && unzip -o deno.zip && rm -f deno.zip && chmod +x ./deno || true)",
     "lint": "eslint ."
   },
   "dependencies": {
