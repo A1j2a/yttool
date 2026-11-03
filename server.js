@@ -94,7 +94,9 @@ console.log(`[Init] Using Python at: ${PYTHON_BIN || 'system default'}`)
 console.log(`[Init] Using FFMPEG at: ${FFMPEG}`)
 
 function spawnYtDlp(args, options = {}) {
-  const env = { ...process.env, ...options.env }
+  const currentPath = process.env.PATH || ''
+  const enhancedPath = `${process.cwd()}:${path.dirname(FFMPEG)}:${currentPath}`
+  const env = { ...process.env, PATH: enhancedPath, ...options.env }
   if (PYTHON_BIN && isScript(YTDLP)) {
     return spawn(PYTHON_BIN, [YTDLP, ...args], { ...options, env })
   }
@@ -155,6 +157,29 @@ const isValidYouTubeUrl = (url) =>
 // ── Anti-bot & Cookie Support ────────────────────────────────────────────────
 let autoCookiePath = null
 
+// Helper to ensure Netscape HTTP Cookie spec compliance (strict tab delimiter)
+function normalizeCookieContent(raw) {
+  if (!raw) return ''
+  const lines = raw.split(/\r?\n/)
+  const out = ['# Netscape HTTP Cookie File']
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    const parts = trimmed.split(/\s+/)
+    if (parts.length >= 7) {
+      const domain = parts[0]
+      const flag = parts[1].toUpperCase()
+      const path = parts[2]
+      const secure = parts[3].toUpperCase()
+      const expires = parts[4]
+      const name = parts[5]
+      const value = parts.slice(6).join(' ')
+      out.push([domain, flag, path, secure, expires, name, value].join('\t'))
+    }
+  }
+  return out.join('\n') + '\n'
+}
+
 async function initAutoCookies() {
   try {
     const res = await fetch('https://www.youtube.com', {
@@ -197,7 +222,8 @@ function getCookieArgs() {
   if (process.env.YOUTUBE_COOKIES) {
     const tmpCookie = path.join(os.tmpdir(), 'yt_cookies.txt')
     try {
-      fs.writeFileSync(tmpCookie, process.env.YOUTUBE_COOKIES.trim(), 'utf8')
+      const cleanContent = normalizeCookieContent(process.env.YOUTUBE_COOKIES)
+      fs.writeFileSync(tmpCookie, cleanContent, 'utf8')
       return ['--cookies', tmpCookie]
     } catch (e) {
       console.error('[Cookies] Failed to write temp cookies:', e.message)

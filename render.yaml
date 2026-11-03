@@ -3,8 +3,8 @@ services:
     name: yttune-api
     env: node
     plan: free
-    buildCommand: npm install && curl -L https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/yt-dlp -o ./yt-dlp && chmod +x ./yt-dlp
-    startCommand: npm start
+    buildCommand: npm install && curl -L https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/yt-dlp -o ./yt-dlp && chmod +x ./yt-dlp && curl -fsSL https://github.com/denoland/deno/releases/latest/download/deno-x86_64-unknown-linux-gnu.zip -o deno.zip && unzip -o deno.zip && rm -f deno.zip && chmod +x ./deno
+    startCommand: PATH="./:$PATH" npm start
     envVars:
       - key: NODE_ENV
         value: production
